@@ -1,8 +1,6 @@
 # DnsOne
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/dns_one`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Instead having a complex data schema to assign record sets to individual DNS zones, dns_one assigns one or few record to many zones. Configure your zones in YML files and fetch your domains from a database or YML backend.
 
 ## Installation
 
@@ -30,7 +28,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/dns_one.
+Bug reports and pull requests are welcome on GitHub at https://github.com/tomlobato/dns_one.
 
 
 ## License
