@@ -8,8 +8,13 @@ module Backend; class DB
     def find dom_name
         sql = build_query dom_name
         # http://jakeyesbeck.com/2016/02/14/ruby-threads-and-active-record-connections/
-        res = ActiveRecord::Base.connection_pool.with_connection do
-            ActiveRecord::Base.connection.execute sql
+        res = nil
+        begin
+            ActiveRecord::Base.connection_pool.with_connection do
+                res = ActiveRecord::Base.connection.execute sql
+            end
+        rescue => e
+            Log.exc e
         end
         first_record = res&.first
         record_values = first_record&.values

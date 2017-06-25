@@ -28,5 +28,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "thor"
   spec.add_runtime_dependency "rubydns"
   spec.add_runtime_dependency "activerecord"
+  spec.add_runtime_dependency "rexec"
 
 end

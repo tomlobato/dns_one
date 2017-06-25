@@ -39,6 +39,10 @@ class Log < Logger
             end
         end
 
+        def exc e
+            e "#{e.class}: #{e.desc}"
+        end
+
         def logger
             @logger
         end
