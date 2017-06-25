@@ -1,0 +1,12 @@
+
+[Unit]
+Description=dns_one supervisor
+
+[Service]
+User=root
+Group=root
+Restart=on-failure
+WorkingDirectory=/var/local/dns_one
+ExecStart=/bin/bash -lc '/root/.rbenv/shims/dns_one'
+StandardOutput=syslog
+StandardError=syslog

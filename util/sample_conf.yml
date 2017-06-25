@@ -1,0 +1,72 @@
+
+config:
+  run_as: dnsserver # required (adduser dnsserver)
+  # cache_max: 100000 # optional, defaults to 10000
+  ignore_subdomains: www en it es pt ru fr at
+
+backend:
+  ############## 
+  # DB backend #
+  ############## 
+  database: db_name
+  username: db_user
+  password: db_pass
+  pool: 20
+  adapter: postgresql
+  host: my-pg-db.com
+  port: 5432
+  # adapter: mysql2
+  # host: my-mysql-db.com
+  # port: 3306
+  # # socket: /var/run/mysqld/mysqld.sock"
+  query: SELECT 'set1' FROM domains WHERE url = $domain LIMIT 1
+  # query: SELECT domains.record_set FROM domains WHERE domain_name = $domain LIMIT 1
+
+  # or... 
+
+  ################
+  # File backend #
+  ################
+
+  # file: /etc/dns_one/domain.csv 
+
+  # domain.csv example (set is optional, if missing the first record_set will be used)):
+  # mydomain.com set1
+  # myotherdomain.com
+  # myotherdomain2.com
+  # myotherdomain3.com set2
+
+record_sets:
+
+  set1:
+    A:      123.234.345.456
+    AAAA:   1234:3c00::f03c:91fa:fec2:15df
+    NS:
+      - ns1.mynsserver.com
+      - ns2.mynsserver.com
+    SOA: 
+      - ns1.mynsserver.com  # mname    Name of the host where the master zone file for this zone resides.
+      - www.mycompany.com   # rname    The person responsible for this domain name.
+      - 2016042600          # serial   The version number of the zone file.
+      - 900                 # refresh  How often, in seconds, a secondary name server is to check for updates from the primary name server.
+      - 600                 # retry    How often, in seconds, a secondary name server is to retry after a failure to check for a refresh.
+      - 300                 # expire   Time in seconds that a secondary name server is to use the data before refreshing from the primary name server.
+      - 200                 # minimum  The minimum number of seconds to be used for TTL values in RRs.
+      # More about SOA fields on http://ruby-doc.org/stdlib-2.0.0/libdoc/resolv/rdoc/Resolv/DNS/Resource/SOA.html
+
+  set2:
+    A:      32.34.54.56
+    AAAA:   9034:3c00::f03c:91fb:fec2:15d0
+    NS:
+      - ns1.myothernsserver.com
+      - ns2.myothernsserver.com
+      - ns3.myothernsserver.com
+      - ns4.myothernsserver.com
+    SOA: 
+      - ns1.mynsserver.com
+      - www.mycompany.com
+      - 2016042601
+      - 900          
+      - 600          
+      - 300          
+      - 200          

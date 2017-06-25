@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require "dns_one/cli"
+
+DnsOne::CLI.start
