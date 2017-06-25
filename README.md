@@ -1,7 +1,6 @@
 # DnsOne
 
 [![Gem Version](https://badge.fury.io/rb/dns_one.svg)](https://badge.fury.io/rb/dns_one)
-https://codeclimate.com/github/tomlobato/dns_one
 [![Code Climate](https://codeclimate.com/github/tomlobato/dns_one.svg)](https://codeclimate.com/github/tomlobato/dns_one)
 ![](http://ruby-gem-downloads-badge.herokuapp.com/dns_one?type=total&label=gem%20downloads)
  
