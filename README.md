@@ -1,6 +1,8 @@
 # DnsOne
 
-Instead having a complex data schema to assign record sets to individual DNS zones, dns_one assigns one or few record to many zones. Configure your zones in YML files and fetch your domains from a database or YML backend.
+Instead having a complex data schema to assign record sets to individual DNS zones, dns_one assigns one or few record to many zones.  
+
+Configure your zones in YML files and fetch your domains from a database or YML backend.
 
 ## Installation
 
