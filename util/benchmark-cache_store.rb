@@ -53,6 +53,34 @@ end
 
 test_sorted eval(ARGV[0])
 
-# WINNER 25/Jun/2017: HASH
+# RUN 25/Jun/2017
+# WINNER: HASH
+
+# $ ./cache_store.rb 1e7
+# preparing...
+# testing insert...
+#        user     system      total        real
+# index            1.170000   0.070000   1.240000 (  1.347434)
+# each_with_index  6.300000   0.680000   6.980000 (  9.786449)
+# bsearch_index    0.050000   0.110000   0.160000 (  0.391675)
+# sortedset        0.000000   0.000000   0.000000 (  0.000026)
+# hash             0.000000   0.000000   0.000000 (  0.000012)
+# true
+# true
+# true
+# true
+# false
+# search...
+#        user     system      total        real
+# index          5255680
+#   1.090000   0.020000   1.110000 (  2.041613)
+# each_with_index5255680
+#   5.920000   1.220000   7.140000 (  8.701748)
+# bsearch_index  5255680
+#   0.000000   0.000000   0.000000 (  0.000054)
+# sortedset      5255679
+#   1.110000   0.000000   1.110000 (  1.110011)
+# hash           asd
+#   0.000000   0.000000   0.000000 (  0.000027)
 
 
