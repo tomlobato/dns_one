@@ -1,0 +1,5 @@
+#!/bin/bash
+
+rm dns_one-*.gem
+gem build dns_one.gemspec 
+gem push dns_one-*.gem
