@@ -1,10 +1,14 @@
+# Core
+require 'syslog'
+require 'syslog/logger'
 
+# Gems
 require 'rubydns'
 require 'active_record'
 require 'yaml'
 require 'rexec'
-require 'syslog'
-require 'syslog/logger'
+
+# DnsOne
 
 require "dns_one/core_extensions"
 require "dns_one/log"
@@ -36,7 +40,7 @@ module DnsOne; class DnsOne
 
 		# check_root
 		begin
-			Dir.chdir WORK_DIR
+			Dir.chdir (@conf.config[:work_dir] || WORK_DIR)
 		rescue => e
 			Log.w "Cannot change working dir to #{WORK_DIR}. Will continue in #{Dir.pwd}."
 		end
@@ -53,6 +57,8 @@ module DnsOne; class DnsOne
 
 		conf = YAML.load_file conf_file
 		conf.deep_symbolize_keys!
+
+		conf[:config] ||= {}
 
 		OpenStruct.new conf
 	end

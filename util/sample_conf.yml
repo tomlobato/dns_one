@@ -1,8 +1,8 @@
 
 config:
-  run_as: dnsserver # required (adduser dnsserver)
-  # cache_max: 100000 # optional, defaults to 10000
-  ignore_subdomains: www en it es pt ru fr at
+  run_as: dnsserver                           # optional, but highly recommended! adduser --system dnsserver
+  ignore_subdomains: www en it es pt ru fr at # optional
+  # cache_max: 100000                         # optional, defaults to 10000
 
 backend:
   ############## 
@@ -12,14 +12,17 @@ backend:
   username: db_user
   password: db_pass
   pool: 20
+
   adapter: postgresql
   host: my-pg-db.com
   port: 5432
+
   # adapter: mysql2
   # host: my-mysql-db.com
   # port: 3306
   # # socket: /var/run/mysqld/mysqld.sock"
-  query: SELECT 'set1' FROM domains WHERE url = $domain LIMIT 1
+
+  query: SELECT 'my_set_1' FROM domains WHERE url = $domain LIMIT 1
   # query: SELECT domains.record_set FROM domains WHERE domain_name = $domain LIMIT 1
 
   # or... 
@@ -28,9 +31,9 @@ backend:
   # File backend #
   ################
 
-  # file: /etc/dns_one/domain.csv 
+  # file: /etc/dns_one/domains.csv 
 
-  # domain.csv example (set is optional, if missing the first record_set will be used)):
+  # domains.csv example (set is optional, if missing the first record_set will be used)):
   # mydomain.com set1
   # myotherdomain.com
   # myotherdomain2.com
@@ -38,7 +41,7 @@ backend:
 
 record_sets:
 
-  set1:
+  my_set_1:
     A:      123.234.345.456
     AAAA:   1234:3c00::f03c:91fa:fec2:15df
     NS:
@@ -54,7 +57,7 @@ record_sets:
       - 200                 # minimum  The minimum number of seconds to be used for TTL values in RRs.
       # More about SOA fields on http://ruby-doc.org/stdlib-2.0.0/libdoc/resolv/rdoc/Resolv/DNS/Resource/SOA.html
 
-  set2:
+  my_other_set:
     A:      32.34.54.56
     AAAA:   9034:3c00::f03c:91fb:fec2:15d0
     NS:

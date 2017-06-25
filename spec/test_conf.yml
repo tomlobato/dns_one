@@ -1,0 +1,40 @@
+
+config:
+  ignore_subdomains: subdom1 subdom2
+  cache_max: 5
+  work_dir: '.'
+
+backend:
+  file: spec/domains.csv 
+
+record_sets:
+  set1:
+    A:      216.58.210.238
+    AAAA:   2a00:1450:4006:803::200f
+    NS:
+      - ns1.mynsserver.com
+      - ns2.mynsserver.com
+    SOA: 
+      - ns1.mynsserver.com  
+      - www.mycompany.com   
+      - 2016042600          
+      - 900                 
+      - 600                 
+      - 300                 
+      - 200                 
+  set2:
+    A:      216.58.210.237
+    AAAA:   2a00:1450:4006:803::200e
+    NS:
+      - ns1.myothernsserver.com
+      - ns2.myothernsserver.com
+      - ns3.myothernsserver.com
+      - ns4.myothernsserver.com
+    SOA: 
+      - ns1.myotherserver.com
+      - www.myothercompany.com
+      - 2016042601
+      - 900          
+      - 600          
+      - 300          
+      - 100          

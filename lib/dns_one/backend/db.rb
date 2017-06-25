@@ -1,4 +1,4 @@
-module Backend; class DB
+module Backend; class BackendDB
     def initialize conf
         @query = conf.delete :query
         @db_conf = conf
@@ -30,6 +30,10 @@ module Backend; class DB
         first_record = res&.first
         record_values = first_record&.values
         record_values&.first
+    end
+
+    def allow_cache
+        true
     end
 
     private

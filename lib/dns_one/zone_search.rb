@@ -29,6 +29,10 @@ module DnsOne; class ZoneSearch
         Log.d "record set name #{ rec_set_name ? 'found' : 'not_found' }"
         rec_set_name or return
 
+        if rec_set_name == ''
+            rec_set_name = @conf.record_sets.keys.first.to_s
+        end
+
         rec_set = @conf.record_sets[rec_set_name.to_sym]
         Log.d "record set #{ rec_set ? 'found' : 'not found' }"
         rec_set or return
@@ -55,16 +59,17 @@ module DnsOne; class ZoneSearch
     def set_backend
         if file = @conf.backend[:file]
             unless File.exists? file
-                Util.die "Configuration file #{file} not found."
+                Util.die "Domain list file #{file} not found."
             end
-            Backend::File.new file          
+            Backend::BackendFile.new file          
         else
-            Backend::DB.new @conf.backend
+            Backend::BackendDB.new @conf.backend
         end
     end
 
     def find_record_set dom_name
-        use_cache = dom_name !~ /^NC/
+        use_cache = true
+        use_cache = false if dom_name =~ /^NC/
         dom_name.sub! /^NC/, ''
 
         dom_name.downcase!
@@ -75,12 +80,16 @@ module DnsOne; class ZoneSearch
             dom_name.sub! @ignore_subdomains_re, '' 
         end
 
-        if use_cache and rec_set = @cache.find(dom_name)
+        enabled_cache = use_cache && @backend.allow_cache
+
+        if enabled_cache and rec_set = @cache.find(dom_name)
             Log.d "found in cache"
             rec_set
         else
             if rec_set = @backend.find(dom_name)
-                @cache.add dom_name, rec_set if use_cache
+                if enabled_cache
+                    @cache.add dom_name, rec_set 
+                end
                 rec_set
             end
         end        

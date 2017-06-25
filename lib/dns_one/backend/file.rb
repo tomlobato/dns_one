@@ -1,22 +1,31 @@
 
-module Backend; class File
+module Backend; class BackendFile
     def initialize file
         @domain_map = {}
-        load_file file
+        load file
     end
 
     def find dom_name
         @domain_map[dom_name.downcase]
     end
 
+    def allow_cache
+        false
+    end
+
     private
 
-    def load
+    def load file
         File.open(file).each_line do |line|
+            line.strip!
             domain_name, rec_set_name = line
-                .strip
                 .split(/[,\s]+/)
-            @domain_map[domain_name.strip.downcase] = rec_set_name&.strip || ''
+            if domain_name and not domain_name.empty?
+                @domain_map[domain_name.strip.downcase] = rec_set_name&.strip || ''
+            else
+                Log.w "Ignoring #{file} line: #{line}"
+            end
         end
     end
+
 end; end
