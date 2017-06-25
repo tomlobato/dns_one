@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{DNS server for many zones sharing only one or few records, written in Ruby.}
   spec.description   = %q{Instead having a complex data schema to assign record sets to individual DNS zones, dns_one assigns one or few record to many zones. Configure your zones in YML files and fetch your domains from a database or YML backend.}
-  spec.homepage      = "http://dns-one.bettercall.io"
+  spec.homepage      = "https://tomlobato.github.io/dns_one/"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
