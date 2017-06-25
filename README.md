@@ -11,10 +11,16 @@ TODO: Delete this and the text above, and describe your gem
 ## Usage
 
     # dns_one install
-    # dns_one uninstall
+
+Configure ```/etc/dns_one/conf.yml```. Then:
+
     # dns_one start
+
+Also:
+
     # dns_one status
     # dns_one stop
+    # dns_one uninstall
 
 ## Development
 
