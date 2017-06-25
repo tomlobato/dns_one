@@ -10,7 +10,11 @@ TODO: Delete this and the text above, and describe your gem
 
 ## Usage
 
-TODO: Write usage instructions here
+    # dns_one install
+    # dns_one uninstall
+    # dns_one start
+    # dns_one status
+    # dns_one stop
 
 ## Development
 
