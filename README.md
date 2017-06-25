@@ -6,7 +6,7 @@ TODO: Delete this and the text above, and describe your gem
 
 ## Installation
 
-    $ gem install dns_one
+    # gem install dns_one
 
 ## Usage
 
