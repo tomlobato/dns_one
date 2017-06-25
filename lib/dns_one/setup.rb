@@ -1,4 +1,4 @@
-class DnsOne::Setup
+module DnsOne; class Setup
     SYSTEMD_SERVICES_DIR = "/lib/systemd/system/"
     SERVICE_NAME = 'dns_one'
     SYSTEMD_SERVICE_FILE = "#{SYSTEMD_SERVICES_DIR}/#{SERVICE_NAME}.service"
@@ -7,8 +7,12 @@ class DnsOne::Setup
         @thisdir = File.join File.dirname(__FILE__)
     end
 
-    def setup
+    def install
         check_root
+        unless Util.has_systemd?
+            STDERR.puts "DnsOne requires systemd. Aborting install."
+            exit 1
+        end
         mkdirs
         copy_sample_conf
         install_systemd_service
@@ -19,7 +23,7 @@ class DnsOne::Setup
         stop
         # File.delete DnsOne::DEFAULT_CONF_FILE
         if File.exist?(SYSTEMD_SERVICE_FILE)
-            run "systemctl disable #{SERVICE_NAME}" 
+            Util.run "systemctl disable #{SERVICE_NAME}" 
             File.delete SYSTEMD_SERVICE_FILE
         end
         FileUtils.rm_rf DnsOne::WORKING_DIR
@@ -29,8 +33,8 @@ class DnsOne::Setup
     private
 
     def mkdirs
-        FileUtils.mkdir_p ZoneOne::CONF_DIR
-        FileUtils.mkdir_p ZoneOne::WORK_DIR
+        FileUtils.mkdir_p DnsOne::CONF_DIR
+        FileUtils.mkdir_p DnsOne::WORK_DIR
     end
 
     def setup_finished_msg
@@ -45,11 +49,6 @@ class DnsOne::Setup
         File.exist?(SYSTEMD_SERVICE_FILE)
     end
 
-    def has_systemd?
-        File.exist?(`which systemctl`.strip) && 
-        File.writable?('/lib/systemd/system')
-    end
-
     def check_root
         unless Process.uid == 0
             STDERR.puts "Install requires root privileges. Run with sudo or login as root. Aborting."
@@ -58,15 +57,10 @@ class DnsOne::Setup
     end
 
     def install_systemd_service
-        unless has_systemd?
-            STDERR.puts "DnsOne install requires systemd. Aborting."
-            exit 1
-        end
-        
         copy "#{@thisdir}/../../util/dns_one.service", 
              SYSTEMD_SERVICE_FILE
 
-        run "systemctl enable #{SERVICE_NAME}"
+        Util.run "systemctl enable #{SERVICE_NAME}"
     end
 
     def copy_sample_conf
@@ -80,9 +74,4 @@ class DnsOne::Setup
         FileUtils.chmod mod, to
     end
 
-    def run cmd
-        puts "Running #{cmd}..."
-        system cmd
-    end
-
-end
+end; end
