@@ -12,7 +12,7 @@ end
 
 class Exception
     def desc
-        "#{ message } #{ backtrace&.join "\n" }"
+        "#{e.class}: #{ message }\n#{ backtrace&.join "\n" }"
     end
     def puts_stderr
         STDERR.puts e.desc
