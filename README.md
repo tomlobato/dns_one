@@ -1,5 +1,12 @@
 # DnsOne
 
+[![Gem Version](https://badge.fury.io/rb/dns_one.svg)](https://badge.fury.io/rb/dns_one)
+https://codeclimate.com/github/tomlobato/dns_one
+[![Code Climate](https://codeclimate.com/github/tomlobato/dns_one.svg)](https://codeclimate.com/github/tomlobato/dns_one)
+![](http://ruby-gem-downloads-badge.herokuapp.com/dns_one?type=total&label=gem%20downloads)
+ 
+By [Bettercall.io](https://bettercall.io/).
+
 Instead having a complex data schema to assign record sets to individual DNS zones, dns_one assigns one or few record to many zones.  
 
 Configure your zones in YML files and fetch your domains from a database or YML backend.
