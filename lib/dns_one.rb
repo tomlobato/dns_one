@@ -34,7 +34,7 @@ module DnsOne; class DnsOne
 	CONF_DIR = "/etc/dns_one"
 	SYSLOG_NAME = 'dns_one'
 
-	def initialize conf_file: nil, log_file: nil
+	def initialize conf_file: nil, log_file: nil, work_dir: nil
 		cmd_log_file = log_file
 		log_file ||= DEFAULT_LOG_FILE
 		Log.setup log_file, SYSLOG_NAME
@@ -42,6 +42,8 @@ module DnsOne; class DnsOne
 		conf_file ||= DEFAULT_CONF_FILE
 		@conf_all = parse_conf conf_file
 		@conf = @conf_all.main
+
+		work_dir ||= WORK_DIR
 
 		# Redefine log file if set in conf file
 		unless cmd_log_file
@@ -53,7 +55,7 @@ module DnsOne; class DnsOne
 		end
 
 		begin
-			Dir.chdir WORK_DIR
+			Dir.chdir work_dir
 		rescue => e
 			Log.w "Cannot change working dir to #{WORK_DIR}. Will continue in #{Dir.pwd}."
 		end
