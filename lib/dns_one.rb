@@ -34,8 +34,9 @@ module DnsOne; class DnsOne
 	CONF_DIR = "/etc/dns_one"
 	SYSLOG_NAME = 'dns_one'
 
-	def initialize conf_file: nil, cmd_log_file: nil
-		log_file = cmd_log_file || DEFAULT_LOG_FILE
+	def initialize conf_file: nil, log_file: nil
+		cmd_log_file = log_file
+		log_file ||= DEFAULT_LOG_FILE
 		Log.setup log_file, SYSLOG_NAME
 
 		conf_file ||= DEFAULT_CONF_FILE
