@@ -26,7 +26,7 @@ module DnsOne; class ZoneSearch
         Log.d "searching #{ dom_name }..."
 
         rec_set_name = find_record_set dom_name
-        Log.d "record set name #{ rec_set_name ? 'found' : 'not found' } for #{dom_name}"
+        Log.d "record set name #{ rec_set_name ? 'found' : 'not found' } for #{dom_name} #{res_class}"
         rec_set_name or return
 
         if rec_set_name == ''
@@ -34,7 +34,7 @@ module DnsOne; class ZoneSearch
         end
 
         rec_set = @conf[:record_sets][rec_set_name.to_sym]
-        Log.d "record set #{ rec_set ? 'found' : 'not found' } for #{dom_name}"
+        Log.d "record set #{ rec_set ? 'found' : 'not found' } for #{dom_name} #{res_class}"
         rec_set or return
 
         answer = nil
