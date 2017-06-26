@@ -32,19 +32,19 @@ class DnsOne::CLI < Thor
 
     desc "start", "start dns_one"
     def start
-        Util.ensure_sytemd
-        run_cmd "systemctl start #{DnsOne::Setup::SERVICE_NAME}"
+        DnsOne::Util.ensure_sytemd
+        DnsOne::Util.run "systemctl start #{DnsOne::Setup::SERVICE_NAME}"
     end
 
     desc "stop", "stop dns_one"
     def stop
-        Util.ensure_sytemd
-        Util.run "systemctl stop #{DnsOne::Setup::SERVICE_NAME}"
+        DnsOne::Util.ensure_sytemd
+        DnsOne::Util.run "systemctl stop #{DnsOne::Setup::SERVICE_NAME}"
     end
 
     desc "status", "check dns_one status"
     def status
-        Util.ensure_sytemd
-        Util.run "systemctl status #{DnsOne::Setup::SERVICE_NAME}"
+        DnsOne::Util.ensure_sytemd
+        DnsOne::Util.run "systemctl status #{DnsOne::Setup::SERVICE_NAME}"
     end
 end
