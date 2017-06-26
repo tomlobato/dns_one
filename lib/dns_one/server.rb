@@ -17,6 +17,11 @@ module DnsOne; class Server # < RExec::Daemon::Base
 
     def run
         conf = @conf
+        zone_search = ZoneSearch.instance
+
+        # Find a dummy zone to make AR/pg load all dependencies
+        zone_search.query 'dummy.com.br', Resolv::DNS::Resource::IN, '1.2.3.4'
+
         RubyDNS::run_server(listen: dns_daemon_interfaces, logger: Log.logger) do
             on(:start) do
                 if RExec.current_user == 'root'
@@ -30,7 +35,7 @@ module DnsOne; class Server # < RExec::Daemon::Base
                 domain_name = t.question.to_s
                 ip_address = t.options[:peer] rescue nil
 
-                records = ZoneSearch.instance.query domain_name, t.resource_class, ip_address
+                records = zone_search.query domain_name, t.resource_class, ip_address
 
                 if records
                     if records.empty?
