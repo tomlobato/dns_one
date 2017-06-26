@@ -44,8 +44,7 @@ module DnsOne; class Server # < RExec::Daemon::Base
     end
 
     def dns_daemon_interfaces
-        puts Process.pid 
-        if Process.pid == 0
+        if RExec.current_user == 'root'
             DNS_DAEMON_INTERFACES
         else
             ports = DNS_DAEMON_INTERFACES.map do |port|
