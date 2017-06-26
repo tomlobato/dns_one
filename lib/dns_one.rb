@@ -76,17 +76,17 @@ module DnsOne; class DnsOne
 
 		OpenStruct.new(
 			main: {
-				work_dir: conf[:work_dir],
-				log_file: conf[:log_file]
+				work_dir: 					conf[:config][:work_dir],
+				log_file: 					conf[:config][:log_file]
 			},
 			server: {
-				run_as: conf[:run_as]
+				run_as: 						conf[:config][:run_as]
 			},
 			zone_search: {
-				ignore_subdomains: conf[:ignore_subdomains],
-				cache_max: conf[:cache_max],
-				record_sets: conf[:record_sets],
-				backend: conf[:backend]
+				ignore_subdomains: 	conf[:config][:ignore_subdomains],
+				cache_max: 					conf[:config][:cache_max],
+				record_sets: 				conf[:record_sets],
+				backend: 						conf[:backend]
 			}
 		)
 	end
