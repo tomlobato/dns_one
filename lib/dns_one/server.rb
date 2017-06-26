@@ -15,10 +15,11 @@ module DnsOne; class Server # < RExec::Daemon::Base
     end
 
     def run
+        conf = @conf
         RubyDNS::run_server(listen: dns_daemon_interfaces, logger: Log.logger) do
             on(:start) do
-                if RExec.current_user == 'root' and @conf.config.run_as
-                    RExec.change_user @conf.config.run_as
+                if RExec.current_user == 'root' and conf[:run_as]
+                    RExec.change_user conf[:run_as]
                 end
                 Log.i "Running as #{RExec.current_user}"
             end

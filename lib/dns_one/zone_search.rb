@@ -9,10 +9,10 @@ module DnsOne; class ZoneSearch
         @conf = conf
         check_record_sets
         @backend = set_backend
-        @cache = Cache.new @conf.config[:cache_max]
+        @cache = Cache.new @conf[:cache_max]
 
         @ignore_subdomains_re = nil
-        if ignore_subdomains = @conf.config[:ignore_subdomains]
+        if ignore_subdomains = @conf[:ignore_subdomains]
             unless ignore_subdomains.empty?
                 subdoms = ignore_subdomains.strip.split(/\s+/).map(&:downcase).join('|')
                 @ignore_subdomains_re = /^(#{ subdoms })\./i
@@ -30,10 +30,10 @@ module DnsOne; class ZoneSearch
         rec_set_name or return
 
         if rec_set_name == ''
-            rec_set_name = @conf.record_sets.keys.first.to_s
+            rec_set_name = @conf[:ecord_sets].keys.first.to_s
         end
 
-        rec_set = @conf.record_sets[rec_set_name.to_sym]
+        rec_set = @conf[:record_sets][rec_set_name.to_sym]
         Log.d "record set #{ rec_set ? 'found' : 'not found' }"
         rec_set or return
 
@@ -57,13 +57,13 @@ module DnsOne; class ZoneSearch
     private
 
     def set_backend
-        if file = @conf.backend[:file]
+        if file = @conf[:backend][:file]
             unless File.exists? file
                 Util.die "Domain list file #{file} not found."
             end
             Backend::BackendFile.new file          
         else
-            Backend::BackendDB.new @conf.backend
+            Backend::BackendDB.new @conf[:backend]
         end
     end
 
@@ -96,11 +96,11 @@ module DnsOne; class ZoneSearch
     end
 
     def check_record_sets
-        unless @conf.record_sets and not @conf.record_sets.empty?
+        unless @conf[:record_sets] and not @conf[:ecord_sets].empty?
             Util.die "Record sets cannot be empty. Check file."
         end
 
-        @conf.record_sets.each_pair do |rec_set_name, records|
+        @conf[:record_sets].each_pair do |rec_set_name, records|
             unless records[:NS] and records[:NS].length >= 1
                 Util.die "Record set #{rec_set_name} is invalid. It must have at least 1 NS record."
             end
