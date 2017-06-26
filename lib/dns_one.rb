@@ -84,7 +84,7 @@ module DnsOne; class DnsOne
 				record_sets: conf[:record_sets],
 				backend: conf[:backend]
 			}
-		}
+		)
 	end
 
 	def check_conf_file conf_file
