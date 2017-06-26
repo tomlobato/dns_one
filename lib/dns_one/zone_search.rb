@@ -96,7 +96,7 @@ module DnsOne; class ZoneSearch
     end
 
     def check_record_sets
-        unless @conf[:record_sets] and not @conf[:ecord_sets].empty?
+        if @conf[:record_sets].blank?
             Util.die "Record sets cannot be empty. Check file."
         end
 
