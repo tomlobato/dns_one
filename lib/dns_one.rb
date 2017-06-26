@@ -10,7 +10,10 @@ require 'rexec'
 
 # DnsOne
 
-require "dns_one/core_extensions"
+require "dns_one/core_ext/exception"
+require "dns_one/core_ext/string"
+require "dns_one/core_ext/blank"
+
 require "dns_one/log"
 require "dns_one/util"
 
@@ -74,7 +77,7 @@ module DnsOne; class DnsOne
 				# Util.die "Conf file #{conf_file} must have mode 0600. Aborting." 
 		end
 
-		unless match_root conf_stat
+		unless Util.match_root conf_stat
 				# Util.die "Conf file #{conf_file} must have uid/gid set to root. Aborting." 
 		end
 	end

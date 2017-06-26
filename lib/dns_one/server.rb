@@ -9,8 +9,9 @@ module DnsOne; class Server # < RExec::Daemon::Base
         [:tcp, "::", 15300]
     ]
 
-    def initialize conf
-        ZoneSearch.instance.setup conf
+    def initialize conf, conf_zone_search
+        @conf = conf
+        ZoneSearch.instance.setup conf_zone_search
     end
 
     def run

@@ -22,4 +22,8 @@ module DnsOne; class Util; class << self
       end
   end
 
+  def match_root stat
+      stat.uid == 0 && stat.gid == 0
+  end
+
 end; end; end

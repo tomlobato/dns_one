@@ -1,8 +1,9 @@
 
 config:
   run_as: dnsserver                           # optional, but highly recommended! adduser --system dnsserver
-  ignore_subdomains: www en it es pt ru fr at # optional
+  ignore_subdomains: www en it es pt ru fr at # optional, defaults to an empty list
   # cache_max: 100000                         # optional, defaults to 10000
+  # log_file: /var/log/dns_one.log              # optional, defaults to /var/log/dns_one.log
 
 backend:
   ############## 

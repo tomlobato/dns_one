@@ -1,7 +1,7 @@
 module Backend; class BackendDB
     def initialize conf
         @query = conf.delete :query
-        @db_conf = conf
+        @conf = conf
         setup_db
     end
 
@@ -44,7 +44,27 @@ module Backend; class BackendDB
 
     def setup_db
         ActiveRecord::Base.logger = Log.logger
-        ActiveRecord::Base.establish_connection @db_conf
+
+        gem_name = { 
+            'postgresql' => 'pg',
+            'mysql'      => 'mysql',
+            'mysql2'     => 'mysql2'
+        }[ @conf[:adapter] ]
+          
+        unless gem_name
+            Util.die "Database adapter '#{@conf[:adapter]}' not supported. Aborting."
+        end
+
+        begin
+            require gem_name.to_s
+
+        rescue LoadError => e
+            Util.die "Error loading database dependency.\nMake sure #{gem_name} it is installed, if it is not, install with 'gem install #{gem_name}'\nError Details: #{e.desc}"
+        rescue => e
+            Util.die "Error loading database dependency.\n#{e.desc}"
+        end
+
+        ActiveRecord::Base.establish_connection @conf
     end
   
 end; end
