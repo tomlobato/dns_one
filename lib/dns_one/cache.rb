@@ -18,5 +18,9 @@ module DnsOne; class Cache
     def find k
         @cache[k]
     end
+
+    def stat
+        "#{@cache.length}/#{@max_size}"
+    end
     
 end; end

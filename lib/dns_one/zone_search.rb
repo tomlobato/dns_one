@@ -83,7 +83,7 @@ module DnsOne; class ZoneSearch
         enabled_cache = use_cache && @backend.allow_cache
 
         if enabled_cache and rec_set = @cache.find(dom_name)
-            Log.d "found in cache"
+            Log.d "found in cache (#{@cache.stat})"
             rec_set
         else
             if rec_set = @backend.find(dom_name)
