@@ -40,8 +40,10 @@ module DnsOne; class ZoneSearch
         answer = nil
 
         unless res_class == IN::NS
-            answer = rec_set[ res_class.to_s.split('::').last.to_sym ]
-            answer = [answer] unless answer.is_a? Array
+            if rec = rec_set[ res_class.to_s.split('::').last.to_sym ]
+                answer = rec
+                answer = [answer] unless answer.is_a? Array
+            end
         end
 
         other_records = []
