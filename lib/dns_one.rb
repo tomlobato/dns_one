@@ -7,6 +7,7 @@ require 'rubydns'
 require 'active_record'
 require 'yaml'
 require 'rexec'
+require 'ostruct'
 
 # DnsOne
 

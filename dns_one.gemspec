@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "thor", '~> 0.19.4'
   spec.add_runtime_dependency "rubydns", '~> 1.0'
   spec.add_runtime_dependency "activerecord", '~> 5.1'
+  # spec.add_runtime_dependency "pg", '~> 0.21.0'
   spec.add_runtime_dependency "rexec", '~> 1.6'
 
 end
