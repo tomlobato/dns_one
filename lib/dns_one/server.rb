@@ -3,10 +3,10 @@ module DnsOne; class Server # < RExec::Daemon::Base
 
     DNS_DAEMON_RUN_AS = "dnsserver"
     DNS_DAEMON_INTERFACES = [
-        [:udp, "0.0.0.0", 153],
-        [:tcp, "0.0.0.0", 153],
-        [:udp, "::", 15300],
-        [:tcp, "::", 15300]
+        [:udp, "0.0.0.0", 53],
+        [:tcp, "0.0.0.0", 53],
+        [:udp, "::", 5300],
+        [:tcp, "::", 5300]
     ]
 
     def initialize conf, conf_zone_search
