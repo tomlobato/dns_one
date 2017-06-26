@@ -112,7 +112,9 @@ class Hash
 end
 
 class String
-  BLANK_RE = /\A[[:space:]]*\z/
+  unless BLANK_RE
+    BLANK_RE = /\A[[:space:]]*\z/
+  end
 
   # A string is blank if it's empty or contains whitespaces only:
   #
