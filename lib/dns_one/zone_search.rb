@@ -20,40 +20,45 @@ module DnsOne; class ZoneSearch
         end
     end
 
-    def query dom_name, res_class    
+    def query dom_name, res_class, ip_address
         dom_name = dom_name.dup
+        res_class_short = Util.last_mod res_class # :A, :NS, found in conf.yml:record_sets items
+        Log.d "request #{ dom_name }/#{res_class_short} from #{ip_address}..."
 
-        Log.d "searching #{ dom_name }..."
+        records = []
 
         rec_set_name = find_record_set dom_name
-        Log.d "record set name #{ rec_set_name ? 'found' : 'not found' } for #{dom_name} #{res_class}"
-        rec_set_name or return
+        Log.d "domain #{ rec_set_name ? 'found' : 'not found' } for #{dom_name}/#{res_class_short}"
+        return unless rec_set_name
 
-        if rec_set_name == ''
-            rec_set_name = @conf[:ecord_sets].keys.first.to_s
-        end
+        # use first record set if rec_set_name == ''
+        rec_set_name = @conf[:record_sets].keys.first if rec_set_name == ''
 
         rec_set = @conf[:record_sets][rec_set_name.to_sym]
-        Log.d "record set #{ rec_set ? 'found' : 'not found' } for #{dom_name} #{res_class}"
-        rec_set or return
+        Log.d "record set #{ rec_set ? 'found' : 'not found' } for #{dom_name}/#{res_class_short}"
+        return records unless rec_set
 
-        answer = nil
+        # TODO: move parsing logic to own class
 
-        unless res_class == IN::NS
-            if rec = rec_set[ res_class.to_s.split('::').last.to_sym ]
-                answer = rec
-                answer = [answer] unless answer.is_a? Array
+        recs = rec_set[res_class_short.to_sym]
+
+        # Loop over 1 or more
+        recs = [recs]
+        recs.flatten! unless res_class == IN::SOA
+
+        recs.compact.each do |val_raw|
+            val = if res_class == IN::NS
+                Name.create val_raw
+            elsif res_class == IN::SOA
+                [0, 1].each{|i| val_raw[i] = Name.create val_raw[i] }
+                val_raw
+            else
+                val_raw
             end
+            records << OpenStruct.new(val: val, res_class: res_class, section: 'answer')
         end
 
-        other_records = []
-
-        # NS
-        ns_list = rec_set[:NS].map{|ns| IN::NS.new(Name.create ns)}
-        ns_section = res_class == IN::NS ? :answer : :authority
-        other_records << OpenStruct.new(obj: ns_list, section: ns_section)
-
-        [answer, other_records]
+        records
     end
 
     private

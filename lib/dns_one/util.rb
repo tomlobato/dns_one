@@ -26,4 +26,8 @@ module DnsOne; class Util; class << self
       stat.uid == 0 && stat.gid == 0
   end
 
+  def last_mod constant
+    constant.to_s.split('::').last
+  end
+
 end; end; end

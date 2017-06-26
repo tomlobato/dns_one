@@ -1,7 +1,8 @@
 
 module DnsOne; class Server # < RExec::Daemon::Base
 
-    DNS_DAEMON_RUN_AS = "dnsserver"
+    DEFAULT_RUN_AS = "dnsone"
+
     DNS_DAEMON_INTERFACES = [
         [:udp, "0.0.0.0", 53],
         [:tcp, "0.0.0.0", 53],
@@ -18,19 +19,26 @@ module DnsOne; class Server # < RExec::Daemon::Base
         conf = @conf
         RubyDNS::run_server(listen: dns_daemon_interfaces, logger: Log.logger) do
             on(:start) do
-                if RExec.current_user == 'root' and conf[:run_as]
-                    RExec.change_user conf[:run_as]
+                if RExec.current_user == 'root'
+                    run_as = conf[:run_as] || DEFAULT_RUN_AS
+                    RExec.change_user run_as
                 end
                 Log.i "Running as #{RExec.current_user}"
             end
 
             match(/(.+)/) do |t| # transaction
                 domain_name = t.question.to_s
-                answer, other_records = ZoneSearch.instance.query domain_name, t.resource_class
-                if answer or other_records
-                    t.respond! *answer if answer
-                    other_records.each do |rec|
-                        t.add rec.obj, {section: rec.section}
+                ip_address = t.options[:peer] rescue nil
+
+                records = ZoneSearch.instance.query domain_name, t.resource_class, ip_address
+
+                if records
+                    if records.empty?
+                        t.fail! :NoError
+                    else
+                        records.each do |rec|
+                            t.respond! *[rec.val].flatten, {resource_class: rec.res_class, section: rec.section}
+                        end
                     end
                 else
                     t.fail! :NXDomain
