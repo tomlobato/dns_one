@@ -14,6 +14,7 @@ module DnsOne; class Setup
 
     def install
         check_root
+        check_ruby_version
         unless Util.has_systemd?
             STDERR.puts "DnsOne requires systemd. Aborting install."
             exit 1
@@ -38,6 +39,13 @@ module DnsOne; class Setup
     end
 
     private
+
+    def check_ruby_version
+        if RUBY_VERSION != REQUIRED_RUBY_VERSION
+            STDERR.puts "Currently dns_one supports #{REQUIRED_RUBY_VERSION} only. Aborting install."
+            exit 1
+        end
+    end
 
     def add_user
         # TODO: prompt user
