@@ -1,7 +1,12 @@
 module DnsOne; class Setup
+    # Currently tested version 
+    # TODO: flexibilize version and make checks/prompts/warnings during install
+    REQUIRED_RUBY_VERSION = '2.3.3' 
+
     SYSTEMD_SERVICES_DIR = "/lib/systemd/system/"
     SERVICE_NAME = 'dns_one'
     SYSTEMD_SERVICE_FILE = "#{SYSTEMD_SERVICES_DIR}/#{SERVICE_NAME}.service"
+
 
     def initialize
         @thisdir = File.join File.dirname(__FILE__)
@@ -14,7 +19,9 @@ module DnsOne; class Setup
             exit 1
         end
         mkdirs
+        set_ruby_version
         copy_sample_conf
+        add_user
         install_systemd_service
         setup_finished_msg
     end
@@ -26,11 +33,20 @@ module DnsOne; class Setup
             Util.run "systemctl disable #{SERVICE_NAME}" 
             File.delete SYSTEMD_SERVICE_FILE
         end
-        FileUtils.rm_rf DnsOne::WORKING_DIR
+        FileUtils.rm_rf DnsOne::WORK_DIR
         puts "Uninstall complete."
     end
 
     private
+
+    def add_user
+        # TODO: prompt user
+        system "adduser --system --no-create-home #{DnsOne::Server::DEFAULT_RUN_AS}"
+    end
+
+    def set_ruby_version
+        File.write "#{WORK_DIR}/.ruby-version", REQUIRED_RUBY_VERSION
+    end
 
     def mkdirs
         FileUtils.mkdir_p DnsOne::CONF_DIR

@@ -101,11 +101,7 @@ end
 		conf_stat = File.stat conf_file
 
 		unless conf_stat.mode.to_s(8) =~ /0600$/
-				# Util.die "Conf file #{conf_file} must have mode 0600. Aborting." 
-		end
-
-		unless Util.match_root conf_stat
-				# Util.die "Conf file #{conf_file} must have uid/gid set to root. Aborting." 
+				Util.die "Conf file #{conf_file} must have mode 0600. Aborting." 
 		end
 	end
 
