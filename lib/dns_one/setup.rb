@@ -94,7 +94,7 @@ module DnsOne; class Setup
 
     def copy_sample_conf
         if File.exist? DnsOne::DEFAULT_CONF_FILE
-            STDOUT.puts "File #{DnsOne::DEFAULT_CONF_FILE}, I won`t rewrite it."
+            STDOUT.puts "File #{DnsOne::DEFAULT_CONF_FILE} exists, skipping creation."
         else
             copy "#{@thisdir}/../../util/sample_conf.yml", 
                  DnsOne::DEFAULT_CONF_FILE

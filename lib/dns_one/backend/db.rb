@@ -43,8 +43,12 @@ module Backend; class BackendDB
     end
 
     def setup_db
+        require_deps
         ActiveRecord::Base.logger = Log.logger
+        ActiveRecord::Base.establish_connection @conf
+    end
 
+    def require_deps
         gem_name = { 
             'postgresql' => 'pg',
             'mysql'      => 'mysql',
@@ -58,12 +62,10 @@ module Backend; class BackendDB
         ['active_record', gem_name].each do |req_name|
             begin
                 require req_name
-            rescue => e
+            rescue StandardError, LoadError => e
                 Util.die "Error on 'require #{req_name}', install with 'gem install #{req_name}'.\nError Details: #{e.desc}"
             end
         end
-
-        ActiveRecord::Base.establish_connection @conf
     end
   
 end; end
