@@ -9,7 +9,7 @@ IN = Resolv::DNS::Resource::IN
 def dom_resolv? dom, type_class = IN::A
 	@dns_resolver ||= Resolv::DNS.new(
 	  :nameserver =>       	['127.0.0.1'],
-	  :nameserver_port =>	[['127.0.0.1', 10153]],
+	  :nameserver_port =>	[['127.0.0.1', 10053]],
 	  :search => 			[''],
 	  :ndots => 			1
 	)
