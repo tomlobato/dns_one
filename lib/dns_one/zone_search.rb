@@ -26,19 +26,20 @@ module DnsOne; class ZoneSearch
         records = []
 
         rec_set_name = find_record_set dom_name
-        Log.d "domain #{ rec_set_name ? 'found' : 'not found' } for #{dom_name}/#{res_class_short}"
+        Log.d "domain #{ rec_set_name ? 'found' : 'not found' }"
         return unless rec_set_name
 
         # use first record set if rec_set_name == ''
         rec_set_name = @conf[:record_sets].keys.first if rec_set_name == ''
 
         rec_set = @conf[:record_sets][rec_set_name.to_sym]
-        Log.d "record set #{ rec_set ? 'found' : 'not found' } for #{dom_name}/#{res_class_short}"
+        Log.d "record set #{ rec_set ? 'found' : 'not found' }"
         return records unless rec_set
 
         # TODO: move parsing logic to own class
 
         recs = rec_set[res_class_short.to_sym]
+        Log.d "record(s) #{ recs ? 'found' : 'not found' }"
 
         # Loop over 1 or more
         recs = [recs]
