@@ -6,9 +6,9 @@
  
 By [Bettercall.io](https://bettercall.io/).
 
-Instead having a complex data schema to assign record sets to individual DNS zones, dns_one assigns one or few record to many zones.  
+Instead having a complex data schema to assign record sets to DNS zones, dns_one assigns one or a few record sets to many zones.
 
-Configure your zones in YML files and fetch your domains from a database or YML backend.
+Configure your record sets in YML files and fetch your domains from a database or YML backend.
 
 ## Installation
 
