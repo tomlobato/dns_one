@@ -12,15 +12,12 @@ module DnsOne; class Server # < RExec::Daemon::Base
 
     def initialize conf, conf_zone_search
         @conf = conf
-        ZoneSearch.instance.setup conf_zone_search
+        @zone_search = ZoneSearch.instance.setup conf_zone_search
     end
 
     def run
+        zone_search = @zone_search
         conf = @conf
-        zone_search = ZoneSearch.instance
-
-        # Find a dummy zone to make AR/pg load all dependencies
-        zone_search.query 'dummy.com.br', Resolv::DNS::Resource::IN, '1.2.3.4'
 
         RubyDNS::run_server(listen: dns_daemon_interfaces, logger: Log.logger) do
             on(:start) do

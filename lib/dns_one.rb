@@ -1,13 +1,13 @@
 # Core
 require 'syslog'
 require 'syslog/logger'
+require 'ostruct'
+require 'yaml'
+require 'singleton'
 
 # Gems
-require 'rubydns'
-require 'active_record'
-require 'yaml'
 require 'rexec'
-require 'ostruct'
+require 'rubydns'
 
 # DnsOne
 
@@ -67,12 +67,14 @@ module DnsOne; class DnsOne
 	end
 
 	private
-
+def symbolize_keys(hash)
+  hash.each_with_object({}) { |(k, v), h| h[k.to_sym] = v.is_a?(Hash) ? symbolize_keys(v) : v }
+end
 	def parse_conf conf_file
 		check_conf_file conf_file
 
 		conf = YAML.load_file conf_file
-		conf.deep_symbolize_keys!
+		conf = symbolize_keys conf
 
 		OpenStruct.new(
 			main: {

@@ -55,13 +55,12 @@ module Backend; class BackendDB
             Util.die "Database adapter '#{@conf[:adapter]}' not supported. Aborting."
         end
 
-        begin
-            require gem_name.to_s
-
-        rescue LoadError => e
-            Util.die "Error loading database dependency.\nMake sure #{gem_name} it is installed, if it is not, install with 'gem install #{gem_name}'\nError Details: #{e.desc}"
-        rescue => e
-            Util.die "Error loading database dependency.\n#{e.desc}"
+        ['active_record', gem_name].each do |req_name|
+            begin
+                require req_name
+            rescue => e
+                Util.die "Error on 'require #{req_name}', install with 'gem install #{req_name}'.\nError Details: #{e.desc}"
+            end
         end
 
         ActiveRecord::Base.establish_connection @conf

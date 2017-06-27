@@ -10,14 +10,12 @@ module DnsOne; class ZoneSearch
         check_record_sets
         @backend = set_backend
         @cache = Cache.new @conf[:cache_max]
+        @ignore_subdomains_re = build_ignore_subdomains_re
 
-        @ignore_subdomains_re = nil
-        if ignore_subdomains = @conf[:ignore_subdomains]
-            unless ignore_subdomains.empty?
-                subdoms = ignore_subdomains.strip.split(/\s+/).map(&:downcase).join('|')
-                @ignore_subdomains_re = /^(#{ subdoms })\./i
-            end
-        end
+        # Find a dummy zone to make AR/pg load all dependencies
+        query 'dummy.com.br', Resolv::DNS::Resource::IN, '1.2.3.4'
+
+        self
     end
 
     def query dom_name, res_class, ip_address
@@ -62,6 +60,13 @@ module DnsOne; class ZoneSearch
     end
 
     private
+
+    def build_ignore_subdomains_re
+        if i = @conf[:ignore_subdomains].presence
+            s = i.strip.split(/\s+/).map(&:downcase).join '|'
+            /^(#{ s })\./i
+        end
+    end
 
     def set_backend
         if file = @conf[:backend][:file]
