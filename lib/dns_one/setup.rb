@@ -49,11 +49,11 @@ module DnsOne; class Setup
 
     def add_user
         # TODO: prompt user
-        system "adduser --system --no-create-home #{DnsOne::Server::DEFAULT_RUN_AS}"
+        system "adduser --system --no-create-home #{Server::DEFAULT_RUN_AS}"
     end
 
     def set_ruby_version
-        File.write "#{WORK_DIR}/.ruby-version", REQUIRED_RUBY_VERSION
+        File.write "#{DnsOne::WORK_DIR}/.ruby-version", REQUIRED_RUBY_VERSION
     end
 
     def mkdirs
