@@ -69,8 +69,10 @@ module DnsOne; class Setup
     def setup_finished_msg
         puts "Installed.\n"
         puts "Now:"
-        puts "1) Edit #{DnsOne::DEFAULT_CONF_FILE}. You can run 'ruby -Ilib/ exe/dns_one --conf util/dev_conf.yml' to test and adjust your configuration."
+        puts "1) Edit #{DnsOne::DEFAULT_CONF_FILE}. You can run 'ruby -Ilib/ exe/dns_one --conf util/dev_conf.yml --log=/dev/stdout' to test and adjust your configuration."
         puts "2) After configure run 'dns_one start'."
+        puts "See startup or logs with 'tail -f /var/log/syslog'"
+        puts "See run logs with 'tail -f #{DnsOne::DEFAULT_LOG_FILE}'"
     end
 
     def is_setup?
