@@ -28,13 +28,14 @@ module DnsOne; class Setup
     end
 
     def uninstall
-        stop
-        # File.delete DnsOne::DEFAULT_CONF_FILE
+        # File.delete DnsOne::DEFAULT_CONF_FILE # TODO: prompt user
         if File.exist?(SYSTEMD_SERVICE_FILE)
+            Util.run "systemctl stop #{SERVICE_NAME}" 
             Util.run "systemctl disable #{SERVICE_NAME}" 
             File.delete SYSTEMD_SERVICE_FILE
         end
         FileUtils.rm_rf DnsOne::WORK_DIR
+        # TODO: prompt if should remove user
         puts "Uninstall complete."
     end
 
