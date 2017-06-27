@@ -49,8 +49,12 @@ module DnsOne; class Setup
     end
 
     def add_user
-        # TODO: prompt user
-        system "adduser --system --no-create-home #{Server::DEFAULT_RUN_AS}"
+        if `cat /etc/passwd|grep ^#{Server::DEFAULT_RUN_AS}:`.strip.present?
+            STDOUT.puts "User #{Server::DEFAULT_RUN_AS} exists, skipping creation."            
+        else
+            # TODO: prompt user
+            system "adduser --system --no-create-home #{Server::DEFAULT_RUN_AS}"
+        end
     end
 
     def set_ruby_version
@@ -89,8 +93,12 @@ module DnsOne; class Setup
     end
 
     def copy_sample_conf
-        copy "#{@thisdir}/../../util/sample_conf.yml", 
-             DnsOne::DEFAULT_CONF_FILE
+        if File.exist? DnsOne::DEFAULT_CONF_FILE
+            STDOUT.puts "File #{DnsOne::DEFAULT_CONF_FILE}, I won`t rewrite it."
+        else
+            copy "#{@thisdir}/../../util/sample_conf.yml", 
+                 DnsOne::DEFAULT_CONF_FILE
+        end
     end
 
     def copy from, to, mod = 0600
