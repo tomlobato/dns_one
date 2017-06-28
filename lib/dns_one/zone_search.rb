@@ -1,4 +1,8 @@
 
+require "dns_one/cache"
+require 'dns_one/backend/file'
+require 'dns_one/backend/db'
+
 module DnsOne; class ZoneSearch
     include Singleton
     
@@ -26,7 +30,7 @@ module DnsOne; class ZoneSearch
         records = []
 
         rec_set_name = find_record_set dom_name
-        Log.d "domain #{ rec_set_name ? 'found' : 'not found' }"
+        Log.d "domain #{ rec_set_name ? "found, rec_set_name = #{rec_set_name}" : 'not found' }"
         return unless rec_set_name
 
         # use first record set if rec_set_name == ''
@@ -71,12 +75,12 @@ module DnsOne; class ZoneSearch
 
     def set_backend
         if file = @conf[:backend][:file]
-            unless File.exists? file
+            unless ::File.exists? file
                 Util.die "Domain list file #{file} not found."
             end
-            Backend::BackendFile.new file          
+            Backend::File.new file          
         else
-            Backend::BackendDB.new @conf[:backend]
+            Backend::DB.new @conf[:backend]
         end
     end
 

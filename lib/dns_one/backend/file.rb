@@ -1,5 +1,6 @@
 
-module Backend; class BackendFile
+module DnsOne; module Backend; class File
+
     def initialize file
         @domain_map = {}
         load file
@@ -16,7 +17,7 @@ module Backend; class BackendFile
     private
 
     def load file
-        File.open(file).each_line do |line|
+        ::File.open(file).each_line do |line|
             line.strip!
             domain_name, rec_set_name = line
                 .split(/[,\s]+/)
@@ -28,4 +29,4 @@ module Backend; class BackendFile
         end
     end
 
-end; end
+end; end; end

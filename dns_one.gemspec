@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["tomlobato@gmail.com"]
 
   spec.summary       = %q{DNS server for many zones sharing only one or few records, written in Ruby.}
-  spec.description   = %q{Instead having a complex data schema to assign record sets to individual DNS zones, dns_one assigns one or few record to many zones. Configure your zones in YML files and fetch your domains from a database or YML backend.}
+  spec.description   = %q{Instead having a complex data schema to assign record sets to DNS zones, dns_one assigns one or a few record sets to many zones. Configure your record sets in YML files and fetch your domains from a database or YML backend.}
   spec.homepage      = "https://tomlobato.github.io/dns_one/"
   spec.license       = "MIT"
 

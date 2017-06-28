@@ -5,6 +5,8 @@ require "dns_one/setup"
 
 class DnsOne::CLI < Thor  
 
+    default_task :run_srv
+
     # RUN
 
     desc "run", "run server"
@@ -12,9 +14,12 @@ class DnsOne::CLI < Thor
     option :log
     option :work_dir
     def run_srv
-        DnsOne::DnsOne.new(conf_file: options[:conf], log_file: options[:log], work_dir: options[:work_dir]).start 
+        DnsOne::DnsOne.new(
+            conf_file: options[:conf], 
+            log_file: options[:log], 
+            work_dir: options[:work_dir]
+        ).start 
     end
-    default_task :run_srv
 
     # INSTALL
 

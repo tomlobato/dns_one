@@ -1,5 +1,7 @@
 
-module DnsOne; class Server # < RExec::Daemon::Base
+require "dns_one/zone_search"
+
+module DnsOne; class Server
 
     DEFAULT_RUN_AS = "dnsone"
 

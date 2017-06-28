@@ -1,4 +1,6 @@
-module Backend; class BackendDB
+
+module DnsOne; module Backend; class DB
+
     def initialize conf
         @query = conf.delete :query
         @conf = conf
@@ -18,13 +20,13 @@ module Backend; class BackendDB
             end
 
         rescue ActiveRecord::StatementInvalid => e
-            Log.e "Query error. Trying to reconnect. Details:\n#{e.desc}"
+            Log.e "SQL query error. Trying to reconnect #{tries}. Details:\n#{e.desc}"
             # http://geoff.evason.name/2015/01/18/postgres-ssl-connection-has-been-closed-unexpectedly
             ActiveRecord::Base.connection.reconnect! 
             find dom_name, (tries+1)
 
         rescue => e
-            Log.exc e
+            Log.e "SQL query error. Details:\n#{e.desc}"
         end
 
         first_record = res&.first
@@ -68,4 +70,4 @@ module Backend; class BackendDB
         end
     end
   
-end; end
+end; end; end
