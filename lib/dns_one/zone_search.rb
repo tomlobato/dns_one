@@ -30,7 +30,7 @@ module DnsOne; class ZoneSearch
         records = []
 
         rec_set_name = find_record_set dom_name
-        Log.d "domain #{ rec_set_name ? "found, rec_set_name = #{rec_set_name}" : 'not found' }"
+        Log.d "domain #{ rec_set_name ? "found, rec_set_name = '#{rec_set_name}'" : 'not found' }"
         return unless rec_set_name
 
         # use first record set if rec_set_name == ''
