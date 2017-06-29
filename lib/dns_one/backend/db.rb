@@ -10,11 +10,9 @@ module DnsOne; module Backend; class DB
     def find dom_name, tries = 1
         return if tries > 3
 
-        sql = build_query dom_name
-    
         # http://jakeyesbeck.com/2016/02/14/ruby-threads-and-active-record-connections/
         res = ActiveRecord::Base.connection_pool.with_connection do
-            ActiveRecord::Base.connection.execute sql
+            ActiveRecord::Base.connection.execute build_query(dom_name)
         end
 
         first_record = res&.first
@@ -37,7 +35,8 @@ module DnsOne; module Backend; class DB
     private
 
     def build_query dom_name
-        @query.sub '$domain', dom_name
+        @query.sub "'$domain'", 
+                    ActiveRecord::Base.connection.quote(dom_name)
     end
 
     def setup_db
