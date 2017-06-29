@@ -6,6 +6,7 @@ require 'dns_one/backend/db'
 module DnsOne; class ZoneSearch
     include Singleton
     
+    DOM_REGEX = /^[a-z0-9]+([\-\.][a-z0-9]+)*\.[a-z]{2,6}$/i
     Name = Resolv::DNS::Name
     IN = Resolv::DNS::Resource::IN
 
@@ -23,6 +24,8 @@ module DnsOne; class ZoneSearch
     end
 
     def query dom_name, res_class, ip_address
+        return unless dom_name =~ DOM_REGEX
+
         dom_name = dom_name.dup
         res_class_short = Util.last_mod res_class # :A, :NS, found in conf.yml:record_sets items
         Log.d "request #{ dom_name }/#{res_class_short} from #{ip_address}..."
