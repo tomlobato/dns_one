@@ -10,6 +10,8 @@ Instead having a complex data schema to assign record sets to DNS zones, dns_one
 
 Configure your record sets in YML files and fetch your domains from a database or YML backend.
 
+*DnsOne is written on top of the great gem [https://github.com/socketry/rubydns](https://github.com/socketry/rubydns). Big thanks!
+
 ## Installation
 
     # gem install dns_one
