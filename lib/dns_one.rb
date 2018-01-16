@@ -3,6 +3,7 @@ require 'syslog'
 require 'syslog/logger'
 require 'ostruct'
 require 'singleton'
+require 'fileutils'
 
 # Gems
 require 'rexec'
