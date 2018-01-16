@@ -9,6 +9,8 @@ require 'fileutils'
 require 'rexec'
 require 'rubydns'
 require 'yaml'
+require 'pg'
+require 'active_record'
 
 # DnsOne
 
