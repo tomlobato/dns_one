@@ -40,7 +40,7 @@ module DnsOne; module Backend; class DB
     end
 
     def setup_db
-        require_deps
+        #require_deps
         ActiveRecord::Base.logger = Log.logger
         ActiveRecord::Base.establish_connection @conf
     end
