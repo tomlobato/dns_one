@@ -15,11 +15,13 @@ module DnsOne; class Server
     def initialize conf, conf_zone_search
         @conf = conf
         @zone_search = ZoneSearch.instance.setup conf_zone_search
+        @stat = Stat.new(db_file: 'stat.db')
     end
 
     def run
         zone_search = @zone_search
         conf = @conf
+        stat = @stat
 
         RubyDNS::run_server(listen: dns_daemon_interfaces, logger: Log.logger) do
             on(:start) do
@@ -31,22 +33,33 @@ module DnsOne; class Server
             end
 
             match(/(.+)/) do |t| # transaction
-                domain_name = t.question.to_s
-                ip_address = t.options[:peer] rescue nil
+                rcode = :NoError
 
-                records = zone_search.query domain_name, t.resource_class, ip_address
+                begin
+                    domain_name = t.question.to_s
+                    ip_address = t.options[:peer] rescue nil
 
-                if records
-                    if records.empty?
-                        t.fail! :NoError
-                    else
-                        records.each do |rec|
-                            t.respond! *[rec.val].flatten, {resource_class: rec.res_class, section: rec.section}
+                    records, from_cache = zone_search.query domain_name, t.resource_class, ip_address
+
+                    if records
+                        if records.empty?
+                            t.fail! :NoError
+                        else
+                            records.each do |rec|
+                                t.respond! *[rec.val].flatten, {resource_class: rec.res_class, section: rec.section}
+                            end
                         end
+                    else
+                        rcode = :NXDomain
+                        t.fail! :NXDomain
                     end
-                else
-                    t.fail! :NXDomain
+                rescue => e
+                    rcode = :ServFail
                 end
+
+                stat.save rcode, t.resource_class, from_cache
+
+                raise e if e
             end
 
             otherwise do |t|

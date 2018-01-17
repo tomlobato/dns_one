@@ -32,7 +32,7 @@ module DnsOne; class ZoneSearch
 
         records = []
 
-        rec_set_name = find_record_set dom_name
+        rec_set_name, from_cache = find_record_set dom_name
         Log.d "domain #{ rec_set_name ? "found, rec_set_name = '#{rec_set_name}'" : 'not found' }"
         return unless rec_set_name
 
@@ -64,7 +64,7 @@ module DnsOne; class ZoneSearch
             records << OpenStruct.new(val: val, res_class: res_class, section: 'answer')
         end
 
-        records
+        [records, from_cache]
     end
 
     private
@@ -102,15 +102,18 @@ module DnsOne; class ZoneSearch
 
         enabled_cache = use_cache && @backend.allow_cache
 
+        from_cache = false
+
         if enabled_cache and rec_set = @cache.find(dom_name)
             Log.d "found in cache (#{@cache.stat})"
-            rec_set
+            from_cache = true
+            [rec_set, from_cache]
         else
             if rec_set = @backend.find(dom_name)
                 if enabled_cache
                     @cache.add dom_name, rec_set 
                 end
-                rec_set
+                [rec_set, from_cache]
             end
         end        
     end

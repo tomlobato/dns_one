@@ -11,6 +11,7 @@ require 'rubydns'
 require 'yaml'
 require 'pg'
 require 'active_record'
+require 'sqlite3'
 
 # DnsOne
 

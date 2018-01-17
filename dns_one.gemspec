@@ -30,5 +30,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "rexec", '~> 1.6'
   spec.add_runtime_dependency "pg", '~> 0.21'
   spec.add_runtime_dependency "activerecord", '~> 5.0'
+  spec.add_runtime_dependency "sqlite3", '~> 1.3'
 
 end
