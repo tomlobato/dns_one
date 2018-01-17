@@ -117,7 +117,7 @@ module DnsOne; class Stat
         opts = {}
         opts[:readonly] = true if @conf[:readonly]
 
-	    Log.i "Opening stat db #{db_file} (cwd: #{Dir.pwd})."
+	    # Log.i "Opening stat db #{db_file} (cwd: #{Dir.pwd})."
         @db = SQLite3::Database.new db_file, opts
 
         if new_db

@@ -26,11 +26,10 @@ module DnsOne; class Server
             on(:start) do
                 if RExec.current_user == 'root'
                     run_as = conf[:run_as] || DEFAULT_RUN_AS
-        	    stat = Stat.new user: run_as if !stat
+        	        stat = Stat.new user: run_as if !stat
                     RExec.change_user run_as
-		    user = run_as
-	        else
-        	    stat = Stat.new if !stat
+                else
+                    stat = Stat.new if !stat
                 end
                 Log.i "Running as #{RExec.current_user}"
             end

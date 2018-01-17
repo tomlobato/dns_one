@@ -19,10 +19,10 @@ module DnsOne; class Setup
             STDERR.puts "DnsOne requires systemd. Aborting install."
             exit 1
         end
+        add_user
         mkdirs
         #set_ruby_version
         copy_sample_conf
-        add_user
         install_systemd_service
         setup_finished_msg
     end
