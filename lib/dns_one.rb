@@ -23,6 +23,7 @@ require "dns_one/core_ext/hash"
 require "dns_one/log"
 require "dns_one/util"
 require "dns_one/server"
+require "dns_one/stat"
 
 module DnsOne; class DnsOne
 

@@ -1,7 +1,12 @@
 module DnsOne; class Stat
+    DB_FNAME = "stat.db"
 
     def initialize conf = {}
         @conf = conf
+        
+        # Setup logger and current working dir
+        DnsOne.new
+        
         ensure_db
     end
 
@@ -42,6 +47,49 @@ module DnsOne; class Stat
         counts
     end
 
+    def self.print
+        stat = new(db_file: DnsOne::DnsOne::STAT_DB, readonly: true)
+        %w(rcode req_resource cache).each do |key|
+            puts "--- #{key} ---"
+            stat.get_counts(key.to_sym).each_pair do |k, v|
+                _k = case key
+                when 'rcode'
+                    stat.rcodes[k]
+                when 'req_resource'
+                    stat.request_resources[k]
+                when 'cache'
+                    k == 0 ? :miss : :hit
+                end
+                puts "#{_k || k}\t#{v}"
+            end
+        end
+    end
+
+    def rcodes
+        unless defined? @@rcodes
+            @@rcodes = Hash[ 
+                Resolv::DNS::RCode.constants.map{|c| 
+                    [
+                        Resolv::DNS::RCode.const_get(c), 
+                        const_underscore(c)
+                    ] 
+                } 
+            ]
+        end
+        @@rcodes
+    end
+
+    def request_resources
+        unless defined? @@request_resources
+            @@request_resources = {}
+            %w(A AAAA ANY CNAME HINFO MINFO MX NS PTR SOA TXT WKS).each do |res|
+                val = Object.const_get("Resolv::DNS::Resource::IN::#{res}")::TypeValue
+                @@request_resources[val] = res.downcase
+            end
+        end
+        @@request_resources
+    end
+
     private
 
     def validate_counter counter
@@ -64,8 +112,16 @@ module DnsOne; class Stat
 
     def ensure_db
         new_db = !File.exists?(db_file)
-        @db = SQLite3::Database.new db_file
-        create_tables if new_db
+
+        opts = {}
+        opts[:readonly] = true if @conf[:readonly]
+
+        @db = SQLite3::Database.new db_file, opts
+
+        if new_db
+            File.chmod 0644, db_file
+            create_tables 
+        end
     end
     
     def create_tables
@@ -80,20 +136,16 @@ module DnsOne; class Stat
             );
         SQL
         
-        sqls <<  <<-SQL
-            CREATE INDEX responses_time         ON responses (time);
+        sqls << <<-SQL
+            CREATE INDEX responses_time_rcode ON responses (time, rcode);
         SQL
 
-        sqls <<  <<-SQL
-            CREATE INDEX responses_rcode        ON responses (rcode);
+        sqls << <<-SQL
+            CREATE INDEX responses_time_req_resource ON responses (time, req_resource);
         SQL
 
-        sqls <<  <<-SQL
-            CREATE INDEX responses_req_resource ON responses (req_resource);
-        SQL
-
-        sqls <<  <<-SQL
-            CREATE INDEX responses_cache        ON responses (cache);
+        sqls << <<-SQL
+            CREATE INDEX responses_time_cache ON responses (time, cache);
         SQL
 
         sqls.each{|sql| @db.execute sql }
@@ -101,18 +153,7 @@ module DnsOne; class Stat
 
 
     def db_file
-        @conf[:db_file]
-    end
-
-    def request_resources
-        unless defined? @@request_resources
-            @@request_resources = {}
-            %w(A AAAA ANY CNAME HINFO MINFO MX NS PTR SOA TXT WKS).each do |res|
-                val = Object.const_get("Resolv::DNS::Resource::IN::#{res}")::TypeValue
-                @@request_resources[val] = res.downcase
-            end
-        end
-        @@request_resources
+        DB_FNAME
     end
 
     def const_underscore name
@@ -125,18 +166,5 @@ module DnsOne; class Stat
         name
     end
 
-    def rcodes
-        unless @@rcodes
-            @@rcodes = Hash[ 
-                Resolv::DNS::RCode.constants.map{|c| 
-                    [
-                        Resolv::DNS::RCode.const_get(c), 
-                        const_underscore(c)
-                    ] 
-                } 
-            ]
-        end
-        @@rcodes
-    end
 end; end
 

@@ -3,7 +3,6 @@ require "thor"
 require 'sqlite3'
 require "dns_one"
 require "dns_one/setup"
-require "dns_one/stat"
 
 class DnsOne::CLI < Thor  
 
@@ -59,11 +58,6 @@ class DnsOne::CLI < Thor
 
     desc "stats", "show counters"
     def stats
-        stat = DnsOne::Stat.new(db_file: 'stat.db')
-        [
-            stat.get_counts(:rcode),
-            stat.get_counts(:req_resource),
-            stat.get_counts(:cache)
-        ]
+        DnsOne::Stat.print
     end
 end

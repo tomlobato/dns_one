@@ -15,7 +15,7 @@ module DnsOne; class Server
     def initialize conf, conf_zone_search
         @conf = conf
         @zone_search = ZoneSearch.instance.setup conf_zone_search
-        @stat = Stat.new(db_file: 'stat.db')
+        @stat = Stat.new
     end
 
     def run
@@ -30,6 +30,7 @@ module DnsOne; class Server
                     RExec.change_user run_as
                 end
                 Log.i "Running as #{RExec.current_user}"
+                File.chown DnsOne::DnsOne::STAT_DB, RExec.current_user
             end
 
             match(/(.+)/) do |t| # transaction

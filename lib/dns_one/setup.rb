@@ -64,6 +64,7 @@ module DnsOne; class Setup
     def mkdirs
         FileUtils.mkdir_p DnsOne::CONF_DIR
         FileUtils.mkdir_p DnsOne::WORK_DIR
+        File.chmod 0755, DnsOne::WORK_DIR
     end
 
     def setup_finished_msg
