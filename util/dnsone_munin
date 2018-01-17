@@ -1,0 +1,146 @@
+#!/root/.rbenv/shims/ruby
+
+# Install
+
+# wget https://raw.githubusercontent.com/tomlobato/dns_one/master/util/dnsone_munin_ -O /usr/local/sbin/dnsone_munin_
+# chmod 755 /usr/local/sbin/dnsone_munin_
+# dnsone_munin_ install
+# /etc/init.d/munin-node restart
+
+require 'active_support/core_ext/hash/conversions'
+require 'msgpack'
+require 'ostruct'
+require 'resolv'
+
+class MuninDnsOne
+
+    CACHE_FILE = '/tmp/dns_one_cache'
+    CACHE_EXPIRE = 30
+
+    GRAPHS = {
+        rcode: {
+            vlabel: 'Return Code count',
+                fields: %w(not_imp refused yx_domain yxrr_set nxrr_set not_auth not_zone badvers no_error badsig badkey badtime badmode nx_domain badalg badname form_err serv_fail)
+        },
+        req_resource: {
+            vlabel: 'Request resource count',
+            fields: %w(a aaaa any cname hinfo minfo mx ns ptr soa txt wks)
+        },
+        cache: {
+            vlabel: 'count',
+            fields: {
+                hit: 'Domain found in cache.',
+                miss: 'Domain not found in cache, requiring a backend access.',
+            },
+        },
+    }
+
+    def initialize argv
+        @argv = argv
+    end
+        
+    def cli 
+        case @argv[0]
+        when 'config'
+            @param = get_params
+            config
+        when 'install'
+            install
+        else
+            @param = get_params
+            run
+        end
+    end
+
+    private
+
+    def graph
+        GRAPHS[@param.graph]
+    end
+
+    def config
+        puts <<-CONFIG
+graph_category Passenger
+graph_title #{@param.graph}
+graph_vlabel #{graph[:vlabel]}
+graph_args --base 1000 -l 0
+graph_info GI
+
+CONFIG
+
+        graph[:fields].each do |f|
+            k = Array === f ? f[0] : f
+            v = Array === f ? f[1] : f
+            puts "#{k}.label #{v}"
+        end
+
+        exit 0
+    end
+
+    def run
+        get_stats[@param.graph.to_s].each_pair do |k, v|
+            puts "#{k}.value #{v}"
+        end
+        exit 0
+    end
+
+    # Util
+
+    def get_params        
+        filename = File.basename __FILE__
+
+        if filename =~ /^dnsone_(#{ GRAPHS.keys.join '|' })/
+            graph_key = $1
+            OpenStruct.new(
+                graph: graph_key.to_sym,
+            )
+        else
+            error "Invalid graph type for filename #{filename}."
+        end
+    end
+
+    def get_stats
+        if false and File.exists?(CACHE_FILE) and
+            (Time.now - File.stat(CACHE_FILE).ctime) < CACHE_EXPIRE
+            MessagePack.unpack File.open(CACHE_FILE, 'rb').read
+         else
+            stat = fetch_stats
+            File.open(CACHE_FILE, 'wb', 0600).write MessagePack.pack(stat)
+            stat
+        end
+    end
+
+    def fetch_stats
+        stat = {}
+        section = nil
+        `dns_one stats`.each_line do |l|
+            if l =~ /---\s*(\S+)\s*---/
+                section = $1
+            elsif l =~ /^(.*?)\s+(.*)$/
+                key = $1.to_sym
+                val = $2.strip
+                stat[section] ||= {}
+                stat[section][key] = val
+            end
+        end
+        stat
+    end
+
+    def install
+        links = []
+        GRAPHS.keys.each do |graph_key|
+            links << graph_key
+        end
+        target = File.expand_path(__FILE__)
+        links.each do |link|
+            system "ln -s #{target} /etc/munin/plugins/dnsone_#{link}"
+        end
+    end
+
+    def error msg
+        STDERR.puts msg
+        exit 1
+    end
+end
+
+MuninDnsOne.new(ARGV).cli

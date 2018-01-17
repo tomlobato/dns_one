@@ -11,7 +11,7 @@ module DnsOne; class Stat
     end
 
     def save rcode, req_resource, cache
-    	Log.i "saving stat (user: #{ `id -un #{Process.uid}` })"
+    	Log.i "saving stat (user: #{ `id -un #{Process.uid}`.strip })"
         @db.execute(
             "INSERT INTO responses (time, rcode, req_resource, cache) VALUES (?, ?, ?, ?)", 
             [
