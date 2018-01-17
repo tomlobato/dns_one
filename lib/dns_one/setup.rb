@@ -66,7 +66,7 @@ module DnsOne; class Setup
 
         FileUtils.mkdir_p DnsOne::WORK_DIR
         File.chmod 0755, DnsOne::WORK_DIR
-        File.chmod `id -u #{Server::DEFAULT_RUN_AS}`, nil, DnsOne::WORK_DIR
+        File.chown `id -u #{Server::DEFAULT_RUN_AS}`.to_i, nil, DnsOne::WORK_DIR
     end
 
     def setup_finished_msg
