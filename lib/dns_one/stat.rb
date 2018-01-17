@@ -3,14 +3,15 @@ module DnsOne; class Stat
 
     def initialize conf = {}
         @conf = conf
-        
+	    
         # Setup logger and current working dir
-        DnsOne.new
+        DnsOne.new if @conf[:from_outside]
         
         ensure_db
     end
 
     def save rcode, req_resource, cache
+    	Log.i "saving stat (user: #{ `id -un #{Process.uid}` })"
         @db.execute(
             "INSERT INTO responses (time, rcode, req_resource, cache) VALUES (?, ?, ?, ?)", 
             [
@@ -48,7 +49,7 @@ module DnsOne; class Stat
     end
 
     def self.print
-        stat = new(db_file: DnsOne::DnsOne::STAT_DB, readonly: true)
+        stat = new(from_outside: true, readonly: true)
         %w(rcode req_resource cache).each do |key|
             puts "--- #{key} ---"
             stat.get_counts(key.to_sym).each_pair do |k, v|
@@ -116,10 +117,12 @@ module DnsOne; class Stat
         opts = {}
         opts[:readonly] = true if @conf[:readonly]
 
+	    Log.i "Opening stat db #{db_file} (cwd: #{Dir.pwd})."
         @db = SQLite3::Database.new db_file, opts
 
         if new_db
             File.chmod 0644, db_file
+    	    File.chown `id -u #{@conf[:user]}`.to_i, nil, db_file if @conf[:user]
             create_tables 
         end
     end

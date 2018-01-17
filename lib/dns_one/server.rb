@@ -15,22 +15,24 @@ module DnsOne; class Server
     def initialize conf, conf_zone_search
         @conf = conf
         @zone_search = ZoneSearch.instance.setup conf_zone_search
-        @stat = Stat.new
     end
 
     def run
         zone_search = @zone_search
         conf = @conf
-        stat = @stat
+        stat = nil
 
         RubyDNS::run_server(listen: dns_daemon_interfaces, logger: Log.logger) do
             on(:start) do
                 if RExec.current_user == 'root'
                     run_as = conf[:run_as] || DEFAULT_RUN_AS
+        	    stat = Stat.new user: run_as if !stat
                     RExec.change_user run_as
+		    user = run_as
+	        else
+        	    stat = Stat.new if !stat
                 end
                 Log.i "Running as #{RExec.current_user}"
-                File.chown DnsOne::DnsOne::STAT_DB, RExec.current_user
             end
 
             match(/(.+)/) do |t| # transaction
