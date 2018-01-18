@@ -158,18 +158,18 @@ module DnsOne; class Stat
         name
     end
 
-    def rsql sql
+    def rsql *sql
         if SQL_PROF
             t0 = Time.now
         end
 
-        res = @db.execute sql
+        res = @db.execute *sql
 
         if SQL_PROF
             @sql_profiler ||= Logger.new '/tmp/dnsone_sql_prof.log'
             time = Time.now.strftime '%y%m%d-%H%M%S.%L'
             dur = "%.3f" % ((Time.now - t0) * 1000.0)
-            _sql = sql.gsub /\n+/, ' '
+            _sql = [sql].flatten[0].gsub /\n+/, ' '
             @sql_profiler.info "#{time} #{dur} #{_sql}"
         end
 
