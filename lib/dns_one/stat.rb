@@ -42,7 +42,7 @@ module DnsOne; class Stat
 
         counts = {}
 
-        rsql(s) do |row|
+        rsql(s).each do |row|
             _counter, count = row
             counts[_counter] = count
         end
