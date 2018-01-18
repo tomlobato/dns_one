@@ -19,20 +19,29 @@ class MuninDnsOne
 
     GRAPHS = {
         rcode: {
-            vlabel: 'Return Code count',
-                fields: %w(not_imp refused yx_domain yxrr_set nxrr_set not_auth not_zone badvers no_error badsig badkey badtime badmode nx_domain badalg badname form_err serv_fail)
+            percent: true,
+            vlabel: '%',
+                fields: %w(not_imp refused yx_domain yxrr_set nxrr_set not_auth not_zone badvers no_error badsig badkey badtime badmode nx_domain badalg badname form_err serv_fail).sort
         },
         req_resource: {
-            vlabel: 'Request resource count',
+            percent: true,
+            vlabel: '%',
             fields: %w(a aaaa any cname hinfo minfo mx ns ptr soa txt wks)
         },
         cache: {
-            vlabel: 'count',
+            percent: true,
+            vlabel: '%',
             fields: {
                 hit: 'Domain found in cache.',
                 miss: 'Domain not found in cache, requiring a backend access.',
             },
         },
+        requests: {
+            vlabel: 'count',
+            fields: {
+                requests: 'requests',
+            },
+        }
     }
 
     def initialize argv
@@ -58,29 +67,49 @@ class MuninDnsOne
         GRAPHS[@param.graph]
     end
 
+    def fields
+        if graph[:fields].is_a? Hash
+            graph[:fields]
+        else
+            _fields = {}            
+            graph[:fields].each do |field|
+                _fields[field.to_sym] = field
+            end
+            _fields
+        end
+    end
+
     def config
         puts <<-CONFIG
-graph_category Passenger
+graph_category DnsOne
 graph_title #{@param.graph}
 graph_vlabel #{graph[:vlabel]}
 graph_args --base 1000 -l 0
-graph_info GI
 
 CONFIG
 
-        graph[:fields].each do |f|
-            k = Array === f ? f[0] : f
-            v = Array === f ? f[1] : f
-            puts "#{k}.label #{v}"
+        fields.each_pair do |k, v|
+            puts "#{k}.label #{k}"
         end
 
         exit 0
     end
 
     def run
-        get_stats[@param.graph.to_s].each_pair do |k, v|
-            puts "#{k}.value #{v}"
+        stats = get_stats[@param.graph.to_s]
+
+        if graph[:percent]
+            sum = stats.values.reduce(:+).to_f
+        end 
+        
+        fields.keys.each do |k|
+            value = stats[k] || 0.0
+            if graph[:percent]
+                value *= 100 / sum 
+            end
+            puts "#{k}.value #{ value }"
         end
+
         exit 0
     end
 
@@ -113,20 +142,27 @@ CONFIG
     def fetch_stats
         stat = {}
         section = nil
+
         `dns_one stats`.each_line do |l|
             if l =~ /---\s*(\S+)\s*---/
                 section = $1
             elsif l =~ /^(.*?)\s+(.*)$/
                 key = $1.to_sym
-                val = $2.strip
+                val = $2.strip.to_f
                 stat[section] ||= {}
                 stat[section][key] = val
             end
         end
+
+        stat["requests"] = {
+            requests: stat["cache"].values.reduce(:+).to_i
+        }
+
         stat
     end
 
     def install
+        # Links
         links = []
         GRAPHS.keys.each do |graph_key|
             links << graph_key
@@ -135,6 +171,10 @@ CONFIG
         links.each do |link|
             system "ln -s #{target} /etc/munin/plugins/dnsone_#{link}"
         end
+
+        # munin_node_conf
+        munin_node_conf = "[dnsone_*]\nuser root\n\n"
+        File.open('/etc/munin/plugin-conf.d/munin-node', 'a').write munin_node_conf
     end
 
     def error msg
