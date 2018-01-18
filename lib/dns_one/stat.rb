@@ -1,5 +1,6 @@
 module DnsOne; class Stat
     DB_FNAME = "stat.db"
+    SQL_PROF = false
 
     def initialize conf = {}
         @conf = conf
@@ -12,7 +13,7 @@ module DnsOne; class Stat
 
     def save rcode, req_resource, cache
     	Log.i "saving stat (user: #{ `id -un #{Process.uid}`.strip })"
-        @db.execute(
+        rsql(
             "INSERT INTO responses (time, rcode, req_resource, cache) VALUES (?, ?, ?, ?)", 
             [
                 Time.now.to_i, 
@@ -25,6 +26,7 @@ module DnsOne; class Stat
         Log.e e
     end
 
+    # select rcode, count(*) from responses where time > strftime('%s', 'now') - 300 group by rcode
     def get_counts counter, from = nil
         validate_counter counter
         validate_from from
@@ -40,7 +42,7 @@ module DnsOne; class Stat
 
         counts = {}
 
-        @db.execute(s) do |row|
+        rsql(s) do |row|
             _counter, count = row
             counts[_counter] = count
         end
@@ -128,30 +130,17 @@ module DnsOne; class Stat
     end
     
     def create_tables
-        sqls = []
-
-        sqls << <<-SQL
+        @db.execute_batch <<-SQL
             create table responses (
                 time int,
                 rcode int,
                 req_resource int,
                 cache int
             );
-        SQL
-        
-        sqls << <<-SQL
             CREATE INDEX responses_time_rcode ON responses (time, rcode);
-        SQL
-
-        sqls << <<-SQL
             CREATE INDEX responses_time_req_resource ON responses (time, req_resource);
-        SQL
-
-        sqls << <<-SQL
             CREATE INDEX responses_time_cache ON responses (time, cache);
         SQL
-
-        sqls.each{|sql| @db.execute sql }
     end
 
 
@@ -167,6 +156,24 @@ module DnsOne; class Stat
         name.tr!("-", "_")
         name.downcase!
         name
+    end
+
+    def rsql sql
+        if SQL_PROF
+            t0 = Time.now
+        end
+
+        res = @db.execute sql
+
+        if SQL_PROF
+            @sql_profiler ||= Logger.new '/tmp/dnsone_sql_prof.log'
+            time = Time.now.strftime '%y%m%d-%H%M%S.%L'
+            dur = "%.3f" % ((Time.now - t0) * 1000.0)
+            _sql = sql.gsub /\n+/, ' '
+            @sql_profiler.info "#{time} #{dur} #{_sql}"
+        end
+
+        res
     end
 
 end; end
