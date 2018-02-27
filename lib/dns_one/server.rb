@@ -22,7 +22,7 @@ module DnsOne; class Server
         conf = @conf
         stat = nil
 
-        RubyDNS::run_server(listen: dns_daemon_interfaces, logger: Log.logger) do
+        RubyDNS::run_server(listen: dns_daemon_interfaces, logger: Log.ruby_dns_logger) do
             on(:start) do
                 if RExec.current_user == 'root'
                     run_as = conf[:run_as] || DEFAULT_RUN_AS
@@ -36,6 +36,7 @@ module DnsOne; class Server
 
             match(/(.+)/) do |t| # transaction
                 rcode = :NoError
+                resp_log = []
 
                 begin
                     domain_name = t.question.to_s
@@ -48,6 +49,7 @@ module DnsOne; class Server
                             t.fail! :NoError
                         else
                             records.each do |rec|
+                                resp_log << rec
                                 t.respond! *[rec.val].flatten, {resource_class: rec.res_class, section: rec.section}
                             end
                         end
@@ -60,6 +62,7 @@ module DnsOne; class Server
                 end
 
                 stat.save rcode, t.resource_class, from_cache
+                Util.log_result ip_address, domain_name, t.resource_class, rcode, resp_log
 
                 raise e if e
             end

@@ -30,4 +30,22 @@ module DnsOne; class Util; class << self
     constant.to_s.split('::').last
   end
 
+  def log_result ip_address, domain_name, res_class, rcode, resp_log
+    fields = []
+
+    fields << domain_name
+    fields << Util.last_mod(res_class)
+    fields << rcode
+    fields << resp_log.map{ |rec|
+        Util.last_mod(rec.res_class) + 
+        ':' +
+        [rec.val].flatten.join(',')
+    }.join(';')
+    fields << ip_address
+
+    fields.map!{|v| v.blank? ? '-' : v}
+
+    Log.i "result: #{ fields.join ' ' }"
+end
+
 end; end; end
