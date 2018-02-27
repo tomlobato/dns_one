@@ -1,6 +1,7 @@
 module DnsOne; class Stat
     DB_FNAME = "stat.db"
-    SQL_PROF = false
+    META_STAT_ON = false
+    META_STAT_FILE = '/tmp/dnsone_sql_prof.log'
 
     def initialize conf = {}
         @conf = conf
@@ -159,21 +160,19 @@ module DnsOne; class Stat
     end
 
     def rsql *sql
-        if SQL_PROF
-            t0 = Time.now
-        end
-
+        t0 = Time.now if META_STAT_ON
         res = @db.execute *sql
-
-        if SQL_PROF
-            @sql_profiler ||= Logger.new '/tmp/dnsone_sql_prof.log'
-            time = Time.now.strftime '%y%m%d-%H%M%S.%L'
-            dur = "%.3f" % ((Time.now - t0) * 1000.0)
-            _sql = [sql].flatten[0].gsub /\n+/, ' '
-            @sql_profiler.info "#{time} #{dur} #{_sql}"
-        end
-
+        meta_stats t0, sql if META_STAT_ON
         res
+    end
+
+    def meta_stats t0, sql
+        time = Time.now.strftime '%y%m%d-%H%M%S.%L'
+        dur = "%.3f" % ((Time.now - t0) * 1000.0)
+        sql = [sql].flatten[0].gsub /\s+/, ' '
+
+        @meta_stats_log ||= Logger.new META_STAT_FILE
+        @meta_stats_log.info "#{time} #{dur} #{sql}"
     end
 
 end; end
