@@ -62,7 +62,7 @@ module DnsOne; class Server
                 end
 
                 stat.save rcode, t.resource_class, from_cache
-                Util.log_result ip_address, domain_name, t.resource_class, rcode, resp_log
+                Util.log_result ip_address, domain_name, t.resource_class, rcode, resp_log, from_cache
 
                 raise e if e
             end

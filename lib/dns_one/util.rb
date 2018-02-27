@@ -30,7 +30,7 @@ module DnsOne; class Util; class << self
     constant.to_s.split('::').last
   end
 
-  def log_result ip_address, domain_name, res_class, rcode, resp_log
+  def log_result ip_address, domain_name, res_class, rcode, resp_log, from_cache
     fields = []
 
     fields << domain_name
@@ -42,6 +42,7 @@ module DnsOne; class Util; class << self
         [rec.val].flatten.join(',')
     }.join(';')
     fields << ip_address
+    fields << (from_cache ? '1' : '0')
 
     fields.map!{|v| v.blank? ? '-' : v}
 
