@@ -6,7 +6,7 @@ require 'dns_one/backend/db'
 module DnsOne; class ZoneSearch
     include Singleton
     
-    DOM_REGEX = /^[a-z0-9]+([\-\.][a-z0-9]+)*\.[a-z]{2,6}$/i
+    DOM_REGEX = /^[a-z0-9]+([\-\.][a-z0-9]+)*\.[a-z]{2,32}$/i
     Name = Resolv::DNS::Name
     IN = Resolv::DNS::Resource::IN
 
