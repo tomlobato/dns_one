@@ -27,31 +27,18 @@ require "dns_one/stat"
 
 module DnsOne; class DnsOne
 
-    DEFAULT_LOG_FILE = "/var/log/dns_one.log"
     DEFAULT_CONF_FILE = '/etc/dns_one/conf.yml'
     WORK_DIR = "/var/local/dns_one"
     CONF_DIR = "/etc/dns_one"
-    SYSLOG_NAME = 'dns_one'
 
-    def initialize conf_file: nil, log_file: nil, work_dir: nil
-        cmd_log_file = log_file
-        log_file ||= DEFAULT_LOG_FILE
-        Log.setup log_file, SYSLOG_NAME
+    def initialize conf_file: nil, work_dir: nil
+        Log.setup
 
         conf_file ||= DEFAULT_CONF_FILE
         @conf_all = parse_conf conf_file
         @conf = @conf_all.main
 
         work_dir ||= WORK_DIR
-
-        # Redefine log file if set in conf file
-        unless cmd_log_file
-            if f = @conf[:log_file].presence 
-                unless Log.change_log_file f
-                    Log.w "Unable to change logfile to #{f}. Will continue with #{Log.log_file_desc}."
-                end
-            end
-        end
 
         begin
             Dir.chdir work_dir
@@ -74,8 +61,7 @@ module DnsOne; class DnsOne
 
         OpenStruct.new(
             main: {
-                work_dir:           conf[:config][:work_dir],
-                log_file:           conf[:config][:log_file]
+                work_dir:           conf[:config][:work_dir]
             },
             server: {
                 run_as:             conf[:config][:run_as]

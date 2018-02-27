@@ -1,5 +1,7 @@
 
 class Log < Logger
+    SYSLOG_MIN_SEVERITY = Logger::WARN
+
     class << self
 
         # 'def [d|i|w|e|f] msg' for DEBUG INFO WARN ERROR FATAL
@@ -11,19 +13,17 @@ class Log < Logger
             end
         end
 
-        def setup file, syslog_name, syslog_min_severity = Logger::WARN
-            @syslog_min_severity = syslog_min_severity
-            @syslog = Syslog::Logger.new syslog_name
-            @log_file = setfile file
+        def setup
+            @syslog = Syslog::Logger.new "dns_one"
+            @log_file = setfile "/var/log/dns_one.log"
             @logger = Logger.new @log_file
+            @logger.level = Logger::INFO
         end
 
-        def change_log_file file
-            new_log_file = setfile file, allow_stdout: false
-            if new_log_file and new_log_file != @log_file
-                @log_file = new_log_file
-                @logger = Logger.new @log_file
-            end
+        def ruby_dns_logger
+            l = Logger.new setfile("/var/log/dns_one_rubydns.log")
+            l.level = Logger::WARN
+            l
         end
 
         def exc e
@@ -47,13 +47,11 @@ class Log < Logger
 
         private
 
-        def setfile file, allow_stdout: true
-            if [STDOUT, STDERR].include? file or
-               File.writable? file or
-               File.writable? File.dirname(file)
+        def setfile file
+            if File.writable?(file) or File.writable?(File.dirname(file))
                 file
-            elsif allow_stdout
-                STDOUT
+            else
+                STDERR
             end
         end
 
@@ -62,7 +60,7 @@ class Log < Logger
 
             @logger.send met_name, msg
 
-            if severity >= @syslog_min_severity
+            if severity >= SYSLOG_MIN_SEVERITY
                 @syslog.send met_name, msg
             end
 
