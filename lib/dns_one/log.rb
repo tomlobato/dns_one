@@ -60,14 +60,8 @@ class Log < Logger
 
             @logger.send met_name, msg
 
-            if severity <= SYSLOG_MIN_SEVERITY
+            if severity >= SYSLOG_MIN_SEVERITY
                 @syslog.send met_name, msg
-            end
-
-            if severity == Logger::FATAL and 
-               @log_file != STDOUT and 
-               @log_file != STDERR
-                STDERR.puts msg
             end
         end
     end
