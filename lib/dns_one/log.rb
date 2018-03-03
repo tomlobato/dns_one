@@ -5,11 +5,10 @@ class Log < Logger
     class << self
 
         # 'def [d|i|w|e|f] msg' for DEBUG INFO WARN ERROR FATAL
-        Logger::Severity::constants.each_with_index do |severity, severity_num|
-            next if severity == :UNKNOWN
+        Logger::Severity::constants.each do |severity|
             method_name = severity.to_s[0].downcase
             define_method(method_name) do |msg|
-                log severity_num, msg
+                log severity, msg
             end
         end
 
@@ -56,13 +55,17 @@ class Log < Logger
         end
 
         def log severity, msg
-            met_name = Logger::Severity::constants[severity].downcase
+            met_name = severity.downcase
 
             @logger.send met_name, msg
 
-            if severity >= SYSLOG_MIN_SEVERITY
+            if sev_num(severity) >= SYSLOG_MIN_SEVERITY
                 @syslog.send met_name, msg
             end
+        end
+
+        def sev_num sev
+            Object.const_get "Logger::#{sev}"
         end
     end
 end
