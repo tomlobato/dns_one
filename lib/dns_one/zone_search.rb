@@ -1,5 +1,7 @@
 
 require "dns_one/cache"
+require 'dns_one/backend/base'
+require 'dns_one/backend/http_bell'
 require 'dns_one/backend/file'
 require 'dns_one/backend/db'
 
