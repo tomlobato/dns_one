@@ -43,11 +43,11 @@ module DnsOne; module Backend; class HTTPBell < Base
     end
 
     def listen_updater_bell
-        unless @conf[:http_bell_bell_port]
+        unless @conf[:http_bell_port]
             return 
         end
         require "socket"  
-        dts = TCPServer.new '0.0.0.0', @conf[:http_bell_bell_port]
+        dts = TCPServer.new '0.0.0.0', @conf[:http_bell_port]
         Thread.new do
             loop do  
                 Thread.start(dts.accept) do |s|

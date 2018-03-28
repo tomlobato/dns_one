@@ -30,7 +30,7 @@ backend:
 
   http_bell_url: https://dnsapi.mysite.com/dns/fetch_since?id=$id
   http_bell_record_set: my_set_1
-  http_bell_bell_port: 27861
+  http_bell_port: 27861
 
   ################
   # File backend #
