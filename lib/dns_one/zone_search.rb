@@ -8,7 +8,6 @@ require 'dns_one/backend/db'
 module DnsOne; class ZoneSearch
     include Singleton
     
-    DOM_REGEX = /^[a-z0-9]+([\-\.][a-z0-9]+)*\.[a-z]{2,32}$/i
     Name = Resolv::DNS::Name
     IN = Resolv::DNS::Resource::IN
 
@@ -27,7 +26,7 @@ module DnsOne; class ZoneSearch
     end
 
     def query dom_name, res_class, ip_address
-        return unless dom_name =~ DOM_REGEX
+        return unless dom_name =~ Util::DOM_REGEX
 
         dom_name = dom_name.dup
         res_class_short = Util.last_mod res_class # :A, :NS, found in conf.yml:record_sets items
@@ -99,10 +98,6 @@ module DnsOne; class ZoneSearch
         dom_name, use_cache = check_debug_tags dom_name
         dom_name = normalize_domain dom_name
         
-        if @ignore_subdomains_re
-            dom_name.sub! @ignore_subdomains_re, '' 
-        end
-
         enabled_cache = use_cache && @backend.allow_cache
 
         if enabled_cache and rec_set = @cache.find(dom_name)
@@ -117,8 +112,13 @@ module DnsOne; class ZoneSearch
     end
 
     def normalize_domain dom_name
-        dom_name.downcase
-                .sub(/\.home$/i, '')
+        dom_name = dom_name.dup
+
+        dom_name.sub! @ignore_subdomains_re, '' if @ignore_subdomains_re
+        dom_name.downcase!
+        dom_name.sub! /\.home$/i, ''
+
+        dom_name
     end
 
     def check_debug_tags dom_name

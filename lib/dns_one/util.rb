@@ -1,5 +1,7 @@
 module DnsOne; class Util; class << self
 
+  DOM_REGEX = /^[a-z0-9]+([\-\.][a-z0-9]+)*\.[a-z]{2,32}$/i
+
   def die msg
     Log.f msg
     exit 1
