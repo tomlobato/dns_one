@@ -68,9 +68,9 @@ module DnsOne; module Backend; class HTTPBell < Base
         when :end
             show_num = 10
             dots = '...' if recs.size > show_num
-            zones = recs[0, show_num].map(&:first).join(', ')
+            zones = recs[0, show_num].map(&:last).join(', ')
             dt = '%.2f' % (Time.now - @log_update_t0)
-            Log.d "#{recs.size} zone(s) added in #{dt}s: #{zones}#{dots}"
+            Log.i "#{recs.size} zone(s) added in #{dt}s: #{zones}#{dots}"
         else
             Log.e "Wrong param #{point} for log_update"
         end
