@@ -65,13 +65,16 @@ module DnsOne; module Backend; class HTTPBell < Base
         when :start
             @log_update_t0 = Time.now
             Log.i "update`ing..."
+            system "echo 'update`ing...' >> /tmp/ddf"
         when :end
             show_num = 10
             dots = '...' if recs.size > show_num
             zones = recs[0, show_num].map(&:last).join(', ')
             dt = '%.2f' % (Time.now - @log_update_t0)
+            system "echo '#{recs.size} zone(s) added in #{dt}s: #{zones}#{dots}' >> /tmp/ddf"
             Log.i "#{recs.size} zone(s) added in #{dt}s: #{zones}#{dots}"
         else
+            system "echo 'Wrong param #{point} for log_update' >> /tmp/ddf"
             Log.e "Wrong param #{point} for log_update"
         end
     end
@@ -83,15 +86,20 @@ module DnsOne; module Backend; class HTTPBell < Base
         require "socket"  
         dts = TCPServer.new '0.0.0.0', @conf[:http_bell_port]
         allow_ips = @conf[:http_bell_allow_ips]
+        Log.i 'Starting bell listener...'
         Thread.new do
             loop do  
                 Thread.start(dts.accept) do |client|
-                    client.close
-                    if !allow_ips || allow_ips.include?(client.peeraddr)
+                    Log.i 'accepted'
+                    numeric_address = client.peeraddr[3]
+                    if !allow_ips || allow_ips.include?(numeric_address)
+                        Log.i 'will update'
                         update
                     else
-                        Log.w "Ignoring bell ring from #{client.peeraddr}."
+                        Log.w "Ignoring bell ring from #{numeric_address}."
                     end
+                    Log.i 'closing connection'
+                    client.close
                 end
             end
         end
