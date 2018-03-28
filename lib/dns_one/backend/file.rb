@@ -1,5 +1,5 @@
 
-module DnsOne; module Backend; class File
+module DnsOne; module Backend; class File < Base
 
     def initialize file
         @domain_map = {}

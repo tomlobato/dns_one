@@ -17,8 +17,9 @@ module DnsOne; class ZoneSearch
         @cache = Cache.new @conf[:cache_max]
         @ignore_subdomains_re = build_ignore_subdomains_re
 
-        # Find a dummy zone to make AR/pg load all dependencies
-        query 'dummy.com.br', Resolv::DNS::Resource::IN, '1.2.3.4'
+        if @backend.preload_dummy?
+            query 'dummy.com.br', Resolv::DNS::Resource::IN, '1.2.3.4'
+        end
 
         self
     end
@@ -38,7 +39,7 @@ module DnsOne; class ZoneSearch
 
         # use first record set if rec_set_name == ''
         rec_set_name = @conf[:record_sets].keys.first if rec_set_name == ''
-
+ 
         rec_set = @conf[:record_sets][rec_set_name.to_sym]
         Log.d "record set #{ rec_set ? 'found' : 'not found' }"
         return records unless rec_set
@@ -81,20 +82,20 @@ module DnsOne; class ZoneSearch
             unless ::File.exists? file
                 Util.die "Domain list file #{file} not found."
             end
-            Backend::File.new file          
+            Backend::File.new file
+        elsif @conf[:backend][:update_cache_url]
+            unless @conf[:backend][:update_cache_record_set]
+                Util.die "backend.update_cache_record_set not set."
+            end
+            Backend::HTTPBell.new @conf[:backend]
         else
             Backend::DB.new @conf[:backend]
         end
     end
 
     def find_record_set dom_name
-        use_cache = true
-        use_cache = false if dom_name =~ /^NC/
-        dom_name.sub! /^NC/, ''
-
-        dom_name.downcase!
-
-        dom_name.sub! /\.home$/i, ''
+        dom_name, use_cache = check_debug_tags dom_name
+        dom_name = normalize_domain dom_name
         
         if @ignore_subdomains_re
             dom_name.sub! @ignore_subdomains_re, '' 
@@ -102,20 +103,28 @@ module DnsOne; class ZoneSearch
 
         enabled_cache = use_cache && @backend.allow_cache
 
-        from_cache = false
-
         if enabled_cache and rec_set = @cache.find(dom_name)
             Log.d "found in cache (#{@cache.stat})"
-            from_cache = true
-            [rec_set, from_cache]
+            [rec_set, true]
         else
             if rec_set = @backend.find(dom_name)
-                if enabled_cache
-                    @cache.add dom_name, rec_set 
-                end
-                [rec_set, from_cache]
+                @cache.add dom_name, rec_set if enabled_cache
+                [rec_set, false]
             end
         end        
+    end
+
+    def normalize_domain dom_name
+        dom_name.downcase
+                .sub(/\.home$/i, '')
+    end
+
+    def check_debug_tags dom_name
+        use_cache = true
+        if dom_name.sub!(/^NC/, '')
+            use_cache = false 
+        end
+        [dom_name, use_cache]
     end
 
     def check_record_sets

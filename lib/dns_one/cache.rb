@@ -1,6 +1,6 @@
 
 module DnsOne; class Cache
-    DEFAULT_MAX_SIZE = 10000
+    DEFAULT_MAX_SIZE = 100000
 
     def initialize max_size = nil
         @max_size = max_size || DEFAULT_MAX_SIZE

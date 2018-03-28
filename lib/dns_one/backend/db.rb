@@ -1,5 +1,5 @@
 
-module DnsOne; module Backend; class DB
+module DnsOne; module Backend; class DB < Base
 
     def initialize conf
         @query = conf.delete :query
@@ -7,12 +7,23 @@ module DnsOne; module Backend; class DB
         setup_db
     end
 
-    def find dom_name, tries = 1
+    def find dom_name
+        query build_query(dom_name)
+    end
+
+    # Find a dummy zone to make AR/pg load all dependencies
+    def preload_dummy?
+        true
+    end
+
+    private
+
+    def query sql, tries = 1
         return if tries > 3
 
         # http://jakeyesbeck.com/2016/02/14/ruby-threads-and-active-record-connections/
         res = ActiveRecord::Base.connection_pool.with_connection do
-            ActiveRecord::Base.connection.execute build_query(dom_name)
+            ActiveRecord::Base.connection.execute sql
         end
 
         first_record = res&.first
@@ -23,16 +34,10 @@ module DnsOne; module Backend; class DB
         Log.e "SQL query error. Trying to reconnect #{tries}. Details:\n#{e.desc}"
         # http://geoff.evason.name/2015/01/18/postgres-ssl-connection-has-been-closed-unexpectedly
         ActiveRecord::Base.connection.reconnect! 
-        find dom_name, (tries+1)
+        find sql, (tries+1)
     rescue => e
         Log.e "SQL query error. Details:\n#{e.desc}"
     end
-
-    def allow_cache
-        true
-    end
-
-    private
 
     def build_query dom_name
         @query.sub "'$domain'", 

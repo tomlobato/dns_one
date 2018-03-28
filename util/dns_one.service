@@ -10,3 +10,4 @@ WorkingDirectory=/var/local/dns_one
 ExecStart=/bin/bash -lc '/root/.rbenv/shims/dns_one'
 StandardOutput=syslog
 StandardError=syslog
+SyslogIdentifier=dns_one
