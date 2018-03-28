@@ -22,7 +22,7 @@ module DnsOne; module Backend; class HTTPBell < Base
     def update
         last_id = @last_id || 0
 
-        url = @conf[:update_cache_url].sub '$id', last_id.to_s
+        url = @conf[:http_bell_url].sub '$id', last_id.to_s
 
         recs = `curl #{url}`
             .split("\n")
@@ -33,7 +33,7 @@ module DnsOne; module Backend; class HTTPBell < Base
         recs.each do |rec|
             id, domain = rec
             id = id.to_i
-            @domains[domain] = @conf[:update_cache_record_set]
+            @domains[domain] = @conf[:http_bell_record_set]
             if !@last_id || @last_id < id
                 @last_id = id
             end
@@ -43,11 +43,11 @@ module DnsOne; module Backend; class HTTPBell < Base
     end
 
     def listen_updater_bell
-        unless @conf[:update_cache_bell_port]
+        unless @conf[:http_bell_bell_port]
             return 
         end
         require "socket"  
-        dts = TCPServer.new '0.0.0.0', @conf[:update_cache_bell_port]
+        dts = TCPServer.new '0.0.0.0', @conf[:http_bell_bell_port]
         Thread.new do
             loop do  
                 Thread.start(dts.accept) do |s|

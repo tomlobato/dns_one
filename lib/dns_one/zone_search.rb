@@ -83,9 +83,9 @@ module DnsOne; class ZoneSearch
                 Util.die "Domain list file #{file} not found."
             end
             Backend::File.new file
-        elsif @conf[:backend][:update_cache_url]
-            unless @conf[:backend][:update_cache_record_set]
-                Util.die "backend.update_cache_record_set not set."
+        elsif @conf[:backend][:http_bell_url]
+            unless @conf[:backend][:http_bell_record_set]
+                Util.die "backend.http_bell_record_set not set."
             end
             Backend::HTTPBell.new @conf[:backend]
         else

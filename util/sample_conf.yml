@@ -8,7 +8,6 @@ config:
 backend:
   ############## 
   # DB backend #
-  ############## 
   database: db_name
   username: db_user
   password: db_pass
@@ -26,11 +25,15 @@ backend:
   query: SELECT 'my_set_1' FROM domains WHERE url = $domain LIMIT 1
   # query: SELECT domains.record_set FROM domains WHERE domain_name = $domain LIMIT 1
 
-  # or... 
+  #####################
+  # HTTP Bell backend #
+
+  http_bell_url: https://dnsapi.mysite.com/dns/fetch_since?id=$id
+  http_bell_record_set: my_set_1
+  http_bell_bell_port: 27861
 
   ################
   # File backend #
-  ################
 
   # file: /etc/dns_one/domains.csv 
 
