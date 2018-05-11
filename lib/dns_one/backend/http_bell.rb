@@ -6,6 +6,8 @@
 
 module DnsOne; module Backend; class HTTPBell < Base
 
+    LOG_DOM_NUM = 10
+
     def initialize conf
         @conf = conf
         @domains = {}
@@ -65,18 +67,16 @@ module DnsOne; module Backend; class HTTPBell < Base
         when :start
             @log_update_t0 = Time.now
             Log.i "update`ing..."
-            system "echo 'update`ing...' >> /tmp/ddf"
         when :end
-            show_num = 10
-            dots = '...' if recs.size > show_num
-            zones = recs[0, show_num].map(&:last).join(', ')
             dt = '%.2f' % (Time.now - @log_update_t0)
-            system "echo '#{recs.size} zone(s) added in #{dt}s: #{zones}#{dots}' >> /tmp/ddf"
+            dots = '...' if recs.size > LOG_DOM_NUM
+            zones = recs[0, LOG_DOM_NUM].map(&:last).join(', ')
             Log.i "#{recs.size} zone(s) added in #{dt}s: #{zones}#{dots}"
         else
-            system "echo 'Wrong param #{point} for log_update' >> /tmp/ddf"
             Log.e "Wrong param #{point} for log_update"
         end
+    rescue => e
+        Log.exc e
     end
 
     def listen_updater_bell

@@ -25,8 +25,8 @@ class Log < Logger
             l
         end
 
-        def exc e
-            e e.desc
+        def exc exception
+            e exception.desc
         end
 
         def logger
