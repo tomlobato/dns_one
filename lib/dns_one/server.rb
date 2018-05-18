@@ -61,8 +61,13 @@ module DnsOne; class Server
                     rcode = :ServFail
                 end
 
-                stat.save rcode, t.resource_class, from_cache
-                Util.log_result ip_address, domain_name, t.resource_class, rcode, resp_log, from_cache
+                if conf[:save_stats]
+                    stat.save rcode, t.resource_class, from_cache
+                end
+
+                if conf[:log_results]
+                    Util.log_result ip_address, domain_name, t.resource_class, rcode, resp_log, from_cache
+                end
 
                 raise e if e
             end
