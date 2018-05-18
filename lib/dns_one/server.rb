@@ -1,9 +1,12 @@
 
 require "dns_one/zone_search"
+require 'socket'
+require 'json'
 
 module DnsOne; class Server
 
     DEFAULT_RUN_AS = "dnsone"
+    DEFAULT_LOG_RESULT_SOCKET_FILE = '/tmp/dns_one_log_result.sock'
 
     DNS_DAEMON_INTERFACES = [
         [:udp, "0.0.0.0", 53],
@@ -15,12 +18,21 @@ module DnsOne; class Server
     def initialize conf, conf_zone_search
         @conf = conf
         @zone_search = ZoneSearch.instance.setup conf_zone_search
+        if conf[:log_result_socket]
+            @log_result = {}
+            @log_result_mutex = Mutex.new
+        end
     end
 
     def run
         zone_search = @zone_search
         conf = @conf
         stat = nil
+        if conf[:log_result_socket]
+            log_result = @log_result
+            log_result_mutex = @log_result_mutex
+            launch_log_result_socket
+        end
 
         RubyDNS::run_server(listen: dns_daemon_interfaces, logger: Log.ruby_dns_logger) do
             on(:start) do
@@ -65,8 +77,27 @@ module DnsOne; class Server
                     stat.save rcode, t.resource_class, from_cache
                 end
 
-                if conf[:log_results]
+                if conf[:log_result]
                     Util.log_result ip_address, domain_name, t.resource_class, rcode, resp_log, from_cache
+                end
+
+                if conf[:log_result_socket]
+                    log_result_mutex.synchronize {
+                        log_result[:requests] ||= 0
+                        log_result[:requests] += 1
+                        
+                        log_result[:cache] ||= 0
+                        log_result[:cache] += 1 if from_cache
+                        
+                        log_result[:rcode] ||= {}
+                        log_result[:rcode][rcode] ||= 0
+                        log_result[:rcode][rcode] += 1
+    
+                        req_resource = Util.last_mod t.resource_class
+                        log_result[:req_resource] ||= {}
+                        log_result[:req_resource][req_resource] ||= 0
+                        log_result[:req_resource][req_resource] += 1                    
+                    }
                 end
 
                 raise e if e
@@ -90,6 +121,38 @@ module DnsOne; class Server
                 port
             end
             ports
+        end
+    end
+
+    def launch_log_result_socket
+        log_result = @log_result
+        log_result_mutex = @log_result_mutex
+        conf = @conf
+
+        sock = Thread.new do
+            sleep 1
+            begin
+                Socket.unix_server_loop(conf[:log_result_socket_file] || DEFAULT_LOG_RESULT_SOCKET_FILE) do |sock, addr|
+                    Thread.new do
+                        loop do
+                            begin
+                                log_result_mutex.synchronize {
+                                    sock.write "#{ log_result.to_json }\n"
+                                }
+                            rescue Errno::EPIPE => e
+                                break
+                            rescue => e
+                                Log.exc e
+                                break
+                            end
+                            Thread.pass
+                            sleep 0.1
+                        end
+                    end
+                end
+            rescue => e
+                Log.exc e
+            end
         end
     end
 

@@ -64,9 +64,11 @@ module DnsOne; class DnsOne
                 work_dir:           conf[:config][:work_dir]
             },
             server: {
-                run_as:             conf[:config][:run_as],
-                log_results:        (conf[:config][:log_results] == '1'),
-                save_stats:           (conf[:config][:save_stats] == '1')
+                run_as:                 conf[:config][:run_as],
+                save_stats:             conf[:config][:save_stats],
+                log_result_file:        conf[:config][:log_result_file],
+                log_result_socket:      conf[:config][:log_result_socket],
+                log_result_socket_file: conf[:config][:log_result_socket_file],
             },
             zone_search: {
                 ignore_subdomains:  conf[:config][:ignore_subdomains],
