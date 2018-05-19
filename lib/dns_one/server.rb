@@ -32,6 +32,7 @@ module DnsOne; class Server
             log_result = @log_result
             log_result_mutex = @log_result_mutex
             launch_log_result_socket
+            log_result_last_reset = 0
         end
 
         RubyDNS::run_server(listen: dns_daemon_interfaces, logger: Log.ruby_dns_logger) do
@@ -73,31 +74,50 @@ module DnsOne; class Server
                     rcode = :ServFail
                 end
 
-                if conf[:save_stats]
-                    stat.save rcode, t.resource_class, from_cache
-                end
+                begin
+                    if conf[:save_stats]
+                        stat.save rcode, t.resource_class, from_cache
+                    end
 
-                if conf[:log_result]
-                    Util.log_result ip_address, domain_name, t.resource_class, rcode, resp_log, from_cache
-                end
+                    if conf[:log_result]
+                        Util.log_result ip_address, domain_name, t.resource_class, rcode, resp_log, from_cache
+                    end
 
-                if conf[:log_result_socket]
-                    log_result_mutex.synchronize {
-                        log_result[:requests] ||= 0
-                        log_result[:requests] += 1
-                        
-                        log_result[:cache] ||= 0
-                        log_result[:cache] += 1 if from_cache
-                        
-                        log_result[:rcode] ||= {}
-                        log_result[:rcode][rcode] ||= 0
-                        log_result[:rcode][rcode] += 1
-    
-                        req_resource = Util.last_mod t.resource_class
-                        log_result[:req_resource] ||= {}
-                        log_result[:req_resource][req_resource] ||= 0
-                        log_result[:req_resource][req_resource] += 1                    
-                    }
+                    if conf[:log_result_socket]
+                        log_result_mutex.synchronize {
+                            # Reset log_result every 5 min
+                            if Time.now.to_i / 300 > log_result_last_reset / 300
+                                log_result_last_reset = Time.now.to_i
+                                log_result.each_key do |k|
+                                    if log_result[k].is_a? Hash
+                                        log_result[k].each_key do |k2|
+                                            log_result[k][k2] = 0
+                                        end
+                                    else
+                                        log_result[k] = 0
+                                    end
+                                end
+                            end
+
+                            log_result[:requests] ||= 0
+                            log_result[:requests] += 1
+                            
+                            log_result[:cache] ||= 0
+                            log_result[:cache] += 1 if from_cache
+                            
+                            rcode_uc = Util.const_underscore rcode
+                            log_result[:rcode] ||= {}
+                            log_result[:rcode][rcode_uc] ||= 0
+                            log_result[:rcode][rcode_uc] += 1
+        
+                            req_resource = Util.last_mod(t.resource_class).downcase
+                            log_result[:req_resource] ||= {}
+                            log_result[:req_resource][req_resource] ||= 0
+                            log_result[:req_resource][req_resource] += 1        
+                        }
+                    end
+                rescue => e
+                    Log.exc e
                 end
 
                 raise e if e

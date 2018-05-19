@@ -51,6 +51,17 @@ module DnsOne; class Util
 
       Log.i "result: #{ fields.join ' ' }"
     end
+
+    def const_underscore name
+        name = name.to_s.dup
+        name.gsub!('::', '/')
+        name.gsub!(/([A-Z\d]+)([A-Z][a-z])/,'\1_\2')
+        name.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
+        name.tr!("-", "_")
+        name.downcase!
+        name
+    end
+
   end 
 
 end; end

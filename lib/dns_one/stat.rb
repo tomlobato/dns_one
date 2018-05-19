@@ -75,7 +75,7 @@ module DnsOne; class Stat
                 Resolv::DNS::RCode.constants.map{|c| 
                     [
                         Resolv::DNS::RCode.const_get(c), 
-                        const_underscore(c)
+                        Util.const_underscore(c)
                     ] 
                 } 
             ]
@@ -147,16 +147,6 @@ module DnsOne; class Stat
 
     def db_file
         DB_FNAME
-    end
-
-    def const_underscore name
-        name = name.to_s.dup
-        name.gsub!('::', '/')
-        name.gsub!(/([A-Z\d]+)([A-Z][a-z])/,'\1_\2')
-        name.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
-        name.tr!("-", "_")
-        name.downcase!
-        name
     end
 
     def rsql *sql
