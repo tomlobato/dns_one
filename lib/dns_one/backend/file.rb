@@ -24,7 +24,7 @@ module DnsOne; module Backend; class File < Base
             if domain_name and not domain_name.empty?
                 @domain_map[domain_name.strip.downcase] = rec_set_name&.strip || ''
             else
-                Log.w "Ignoring #{file} line: #{line}"
+                Global.logger.warn "Ignoring #{file} line: #{line}"
             end
         end
     end

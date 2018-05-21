@@ -1,13 +1,12 @@
 
-config:
-  run_as: dnsserver                           # optional, but highly recommended! adduser --system dnsserver
-  ignore_subdomains: www en it es pt ru fr at # optional, defaults to an empty list
-  # cache_max: 100000                         # optional, defaults to 10000
-  # log_file: /var/log/dns_one.log              # optional, defaults to /var/log/dns_one.log
-  save_stats: false
-  log_result_file: false
-  log_result_socket: true
-  # log_result_socket_file: /tmp/dns_one_log_result.sock
+run_as: dnsserver                           # optional, but highly recommended! adduser --system dnsserver
+ignore_subdomains: www en it es pt ru fr at # optional, defaults to an empty list
+# cache_max: 100000                         # optional, defaults to 10000
+# log_file: /var/log/dns_one.log              # optional, defaults to /var/log/dns_one.log
+log_req_db: false
+log_req_file: false
+log_req_account: true
+# log_req_socket_file: /tmp/socket.socket
 
 backend:
   ############## 

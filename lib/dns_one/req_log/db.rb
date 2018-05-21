@@ -1,4 +1,5 @@
-module DnsOne; class Stat
+module DnsOne; module Backend; class DB
+
     DB_FNAME = "stat.db"
     META_STAT_ON = false
     META_STAT_FILE = '/tmp/dnsone_sql_prof.log'
@@ -12,19 +13,19 @@ module DnsOne; class Stat
         ensure_db
     end
 
-    def save rcode, req_resource, cache
-    	Log.d "saving stat (user: #{ `id -un #{Process.uid}`.strip })"
+    def on_response ip_address, domain_name, res_class, rcode, resp_log, from_cache
+    	Global.logger.debug "saving stat (user: #{ `id -un #{Process.uid}`.strip })"
         rsql(
             "INSERT INTO responses (time, rcode, req_resource, cache) VALUES (?, ?, ?, ?)", 
             [
                 Time.now.to_i, 
                 Resolv::DNS::RCode.const_get(rcode), 
-                req_resource::TypeValue, 
-                (cache ? 1 : 0)
+                res_class::TypeValue, 
+                (from_cache ? 1 : 0)
             ]
         )
     rescue => e
-        Log.e e
+        Global.logger.error e.desc
     end
 
     # select rcode, count(*) from responses where time > strftime('%s', 'now') - 300 group by rcode
@@ -120,7 +121,7 @@ module DnsOne; class Stat
         opts = {}
         opts[:readonly] = true if @conf[:readonly]
 
-	    # Log.i "Opening stat db #{db_file} (cwd: #{Dir.pwd})."
+	    # Global.logger.info "Opening stat db #{db_file} (cwd: #{Dir.pwd})."
         @db = SQLite3::Database.new db_file, opts
 
         if new_db
@@ -165,5 +166,5 @@ module DnsOne; class Stat
         @meta_stats_log.info "#{time} #{dur} #{sql}"
     end
 
-end; end
+end; end; end
 

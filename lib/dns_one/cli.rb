@@ -12,11 +12,9 @@ class DnsOne::CLI < Thor
 
     desc "run", "run server"
     option :conf
-    option :work_dir
     def run_srv
         DnsOne::DnsOne.new(
-            conf_file: options[:conf], 
-            work_dir: options[:work_dir]
+            conf_file: options[:conf]
         ).start 
     end
 

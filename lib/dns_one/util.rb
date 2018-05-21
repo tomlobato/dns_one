@@ -4,7 +4,7 @@ module DnsOne; class Util
 
   class << self
     def die msg
-      Log.f msg
+      Global.logger.fatal msg
       exit 1
     end
 
@@ -33,25 +33,6 @@ module DnsOne; class Util
       constant.to_s.split('::').last
     end
 
-    def log_result ip_address, domain_name, res_class, rcode, resp_log, from_cache
-      fields = []
-
-      fields << domain_name
-      fields << Util.last_mod(res_class)
-      fields << rcode
-      fields << resp_log.map{ |rec|
-          Util.last_mod(rec.res_class) + 
-          ':' +
-          [rec.val].flatten.join(',')
-      }.join(';')
-      fields << ip_address
-      fields << (from_cache ? '1' : '0')
-
-      fields.map!{|v| v.blank? ? '-' : v}
-
-      Log.i "result: #{ fields.join ' ' }"
-    end
-
     def const_underscore name
         name = name.to_s.dup
         name.gsub!('::', '/')
@@ -60,6 +41,33 @@ module DnsOne; class Util
         name.tr!("-", "_")
         name.downcase!
         name
+    end
+
+    def hash_to_ostruct_deep hash
+        os = OpenStruct.new
+        hash.each_pair{ |k, v| 
+            if v.is_a? Hash
+                os[k] = hash_to_ostruct_deep v
+            else
+                os[k] = v
+            end
+        }
+        os
+    end
+
+    def init_logger logdev, level = Logger::WARN, shift_age = 10, shift_size = 2**20
+        if logdev.is_a? String
+            begin
+                FileUtils.mkdir_p File.dirname(logdev)
+                File.write logdev, ''
+            rescue => e
+                $stderr.puts "#{e.desc}\nCannot open log file #{logdev}. Will use STDOUT."
+                logdev = $stdout
+            end
+        end
+        l = Logger.new logdev, shift_age, shift_size
+        l.level = level
+        l
     end
 
   end 

@@ -1,6 +1,4 @@
 # Core
-require 'syslog'
-require 'syslog/logger'
 require 'ostruct'
 require 'singleton'
 require 'fileutils'
@@ -20,76 +18,63 @@ require "dns_one/core_ext/string"
 require "dns_one/core_ext/blank"
 require "dns_one/core_ext/hash"
 
-require "dns_one/log"
+require "dns_one/global"
 require "dns_one/util"
 require "dns_one/server"
-require "dns_one/stat"
+require "dns_one/req_log/db"
 
 module DnsOne; class DnsOne
 
-    DEFAULT_CONF_FILE = '/etc/dns_one/conf.yml'
-    WORK_DIR = "/var/local/dns_one"
-    CONF_DIR = "/etc/dns_one"
+    DEFAULTS = {
+        conf_file:          "/etc/dns_one.yml",
+        work_dir:           "/var/local/dns_one",
+        log_file:           "/var/log/dns_one/dns_one.log",
+        rubydns_log_file:   "/var/log/dns_one/dns_one_rubydns.log",
+        run_as:             "dnsone",
+        interfaces:         [ [:udp, "0.0.0.0", 53],
+                              [:tcp, "0.0.0.0", 53],
+                              [:udp, "::", 5300],
+                              [:tcp, "::", 5300] 
+                            ],
+        log_req_socket_file: '/tmp/dns_one_log_result.sock'
+    }
 
-    def initialize conf_file: nil, work_dir: nil
-        Log.setup
-
-        conf_file ||= DEFAULT_CONF_FILE
-        @conf_all = parse_conf conf_file
-        @conf = @conf_all.main
-
-        work_dir ||= WORK_DIR
-
-        begin
-            Dir.chdir work_dir
-        rescue => e
-            Log.w "Cannot change working dir to #{WORK_DIR}. Will continue in #{Dir.pwd}."
-        end
+    def initialize conf_file: nil
+        @conf = Global.conf = load_conf(conf_file || DEFAULTS[:conf_file])
     end
-
+    
     def start
-        Server.new(@conf_all.server, @conf_all.zone_search).run 
+        init_loggers
+        chdir
+        Server.new.run 
     end
 
     private
-        
-    def parse_conf conf_file
-        check_conf_file conf_file
 
-        conf = YAML.load_file conf_file
-        conf = conf.symbolize_keys
+    def load_conf conf_file
+        conf = DEFAULTS.clone
+        conf.merge! YAML.load_file(conf_file).symbolize_keys
+        Util.hash_to_ostruct_deep conf
 
-        OpenStruct.new(
-            main: {
-                work_dir:           conf[:config][:work_dir]
-            },
-            server: {
-                run_as:                 conf[:config][:run_as],
-                save_stats:             conf[:config][:save_stats],
-                log_result_file:        conf[:config][:log_result_file],
-                log_result_socket:      conf[:config][:log_result_socket],
-                log_result_socket_file: conf[:config][:log_result_socket_file],
-            },
-            zone_search: {
-                ignore_subdomains:  conf[:config][:ignore_subdomains],
-                cache_max:          conf[:config][:cache_max],
-                record_sets:        conf[:record_sets],
-                backend:            conf[:backend]
-            }
-        )
+    rescue => e
+        $stderr.puts e.desc
+        $stderr.puts "Error opening conf file #{conf_file}. Aborting."
+        exit 1
     end
 
-    def check_conf_file conf_file
-        unless File.readable? conf_file
-                Util.die "Conf file #{conf_file} not found or unreadable. Aborting." 
-        end
+    def init_loggers
+        Global.logger           = Util.init_logger @conf.log_file       , Logger::INFO
+        Global.ruby_dns_logger  = Util.init_logger @conf.ruby_dns_logger, Logger::WARN
+    end
 
-        conf_stat = File.stat conf_file
+    def chdir
+        d = @conf.work_dir
+        FileUtils.mkdir_p d
+        Dir.chdir d
 
-        unless conf_stat.mode.to_s(8) =~ /0600$/
-                Util.die "Conf file #{conf_file} must have mode 0600. Aborting." 
-        end
+    rescue => e
+        Global.logger.error e.desc
+        Global.logger.error "Cannot chdir to #{@conf.work_dir}. Will continue in #{Dir.pwd}"
     end
 
 end; end
-

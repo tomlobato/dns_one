@@ -9,7 +9,7 @@ backend:
 
 record_sets:
   set1:
-    A:      216.58.210.238
+    A:      216.58.210.33
     AAAA:   2a00:1450:4006:803::200f
     NS:
       - ns1.mynsserver.com

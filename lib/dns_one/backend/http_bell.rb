@@ -52,7 +52,7 @@ module DnsOne; module Backend; class HTTPBell < Base
             .map{ |r| 
                 id, domain = r.strip.split /\s+/
                 if id !~ /^\d+$/ || domain !~ Util::DOM_REGEX
-                    Log.w "invalid line '#{r}'"
+                    Global.logger.warn "invalid line '#{r}'"
                     nil
                 else
                     [id.to_i, domain.downcase]
@@ -66,17 +66,17 @@ module DnsOne; module Backend; class HTTPBell < Base
         case point
         when :start
             @log_update_t0 = Time.now
-            Log.i "update`ing..."
+            Global.logger.info "update`ing..."
         when :end
             dt = '%.2f' % (Time.now - @log_update_t0)
             dots = '...' if recs.size > LOG_DOM_NUM
             zones = recs[0, LOG_DOM_NUM].map(&:last).join(', ')
-            Log.i "#{recs.size} zone(s) added in #{dt}s: #{zones}#{dots}"
+            Global.logger.info "#{recs.size} zone(s) added in #{dt}s: #{zones}#{dots}"
         else
-            Log.e "Wrong param #{point} for log_update"
+            Global.logger.error e.desc "Wrong param #{point} for log_update"
         end
     rescue => e
-        Log.exc e
+        Global.logger.error e.desc
     end
 
     def listen_updater_bell
@@ -86,19 +86,19 @@ module DnsOne; module Backend; class HTTPBell < Base
         require "socket"  
         dts = TCPServer.new '0.0.0.0', @conf[:http_bell_port]
         allow_ips = @conf[:http_bell_allow_ips]
-        Log.i 'Starting bell listener...'
+        Global.logger.info 'Starting bell listener...'
         Thread.new do
             loop do  
                 Thread.start(dts.accept) do |client|
-                    Log.i 'accepted'
+                    Global.logger.info 'accepted'
                     numeric_address = client.peeraddr[3]
                     if !allow_ips || allow_ips.include?(numeric_address)
-                        Log.i 'will update'
+                        Global.logger.info 'will update'
                         update
                     else
-                        Log.w "Ignoring bell ring from #{numeric_address}."
+                        Global.logger.warn "Ignoring bell ring from #{numeric_address}."
                     end
-                    Log.i 'closing connection'
+                    Global.logger.info 'closing connection'
                     client.close
                 end
             end

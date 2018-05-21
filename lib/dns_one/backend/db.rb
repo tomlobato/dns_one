@@ -31,12 +31,12 @@ module DnsOne; module Backend; class DB < Base
         record_values&.first
 
     rescue ActiveRecord::StatementInvalid => e
-        Log.e "SQL query error. Trying to reconnect #{tries}. Details:\n#{e.desc}"
+        Global.logger.error "SQL query error. Trying to reconnect #{tries}. Details:\n#{e.desc}"
         # http://geoff.evason.name/2015/01/18/postgres-ssl-connection-has-been-closed-unexpectedly
         ActiveRecord::Base.connection.reconnect! 
         find sql, (tries+1)
     rescue => e
-        Log.e "SQL query error. Details:\n#{e.desc}"
+        Global.logger.error "SQL query error. Details:\n#{e.desc}"
     end
 
     def build_query dom_name
@@ -46,7 +46,7 @@ module DnsOne; module Backend; class DB < Base
 
     def setup_db
         #require_deps
-        ActiveRecord::Base.logger = Log.logger
+        ActiveRecord::Base.logger = Global.logger
         ActiveRecord::Base.establish_connection @conf
     end
 

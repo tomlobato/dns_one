@@ -11,11 +11,11 @@ module DnsOne; class ZoneSearch
     Name = Resolv::DNS::Name
     IN = Resolv::DNS::Resource::IN
 
-    def setup conf
-        @conf = conf
+    def setup
+        @conf = Global.conf
         check_record_sets
         @backend = set_backend
-        @cache = Cache.new @conf[:cache_max]
+        @cache = Cache.new Global.conf.cache_max
         @ignore_subdomains_re = build_ignore_subdomains_re
 
         if @backend.preload_dummy?
@@ -30,25 +30,25 @@ module DnsOne; class ZoneSearch
 
         dom_name = dom_name.dup
         res_class_short = Util.last_mod res_class # :A, :NS, found in conf.yml:record_sets items
-        Log.d "request #{ dom_name }/#{res_class_short} from #{ip_address}..."
+        Global.logger.debug "request #{ dom_name }/#{res_class_short} from #{ip_address}..."
 
         records = []
 
         rec_set_name, from_cache = find_record_set dom_name
-        Log.d "domain #{ rec_set_name ? "found, rec_set_name = '#{rec_set_name}'" : 'not found' }"
+        Global.logger.debug "domain #{ rec_set_name ? "found, rec_set_name = '#{rec_set_name}'" : 'not found' }"
         return unless rec_set_name
 
         # use first record set if rec_set_name == ''
-        rec_set_name = @conf[:record_sets].keys.first if rec_set_name == ''
+        rec_set_name = @conf.record_sets.to_h.keys.first if rec_set_name == ''
  
-        rec_set = @conf[:record_sets][rec_set_name.to_sym]
-        Log.d "record set #{ rec_set ? 'found' : 'not found' }"
+        rec_set = @conf.record_sets[rec_set_name]
+        Global.logger.debug "record set #{ rec_set ? 'found' : 'not found' }"
         return records unless rec_set
 
         # TODO: move parsing logic to own class
 
         recs = rec_set[res_class_short.to_sym]
-        Log.d "record(s) #{ recs ? 'found' : 'not found' }"
+        Global.logger.debug "record(s) #{ recs ? 'found' : 'not found' }"
 
         # Loop over 1 or more
         recs = [recs]
@@ -72,25 +72,25 @@ module DnsOne; class ZoneSearch
     private
 
     def build_ignore_subdomains_re
-        if i = @conf[:ignore_subdomains].presence
+        if i = @conf.ignore_subdomains.presence
             s = i.strip.split(/\s+/).map(&:downcase).join '|'
             /^(#{ s })\./i
         end
     end
 
     def set_backend
-        if file = @conf[:backend][:file]
+        if file = @conf.backend.file
             unless ::File.exists? file
-                Util.die "Domain list file #{file} not found."
+                Util.die "Domain list file #{file} not found (pwd = #{Dir.pwd})."
             end
             Backend::File.new file
-        elsif @conf[:backend][:http_bell_url]
-            unless @conf[:backend][:http_bell_record_set]
+        elsif @conf.backend.http_bell_url
+            unless @conf.backend.http_bell_record_set
                 Util.die "backend.http_bell_record_set not set."
             end
-            Backend::HTTPBell.new @conf[:backend]
+            Backend::HTTPBell.new @conf.backend
         else
-            Backend::DB.new @conf[:backend]
+            Backend::DB.new @conf.backend
         end
     end
 
@@ -101,7 +101,7 @@ module DnsOne; class ZoneSearch
         enabled_cache = use_cache && @backend.allow_cache
 
         if enabled_cache and rec_set = @cache.find(dom_name)
-            Log.d "found in cache (#{@cache.stat})"
+            Global.logger.debug "found in cache (#{@cache.stat})"
             [rec_set, true]
         else
             if rec_set = @backend.find(dom_name)
@@ -130,11 +130,11 @@ module DnsOne; class ZoneSearch
     end
 
     def check_record_sets
-        if @conf[:record_sets].blank?
+        if @conf.record_sets.blank?
             Util.die "Record sets cannot be empty. Check file."
         end
 
-        @conf[:record_sets].each_pair do |rec_set_name, records|
+        @conf.record_sets.each_pair do |rec_set_name, records|
             unless records[:NS] and records[:NS].length >= 1
                 Util.die "Record set #{rec_set_name} is invalid. It must have at least 1 NS record."
             end
