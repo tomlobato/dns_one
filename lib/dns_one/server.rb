@@ -1,8 +1,7 @@
 
 require "dns_one/zone_search"
 require "dns_one/req_log/req_log"
-require 'socket'
-require 'json'
+require "dns_one/req_log/account"
 
 module DnsOne; class Server
     def initialize 

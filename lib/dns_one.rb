@@ -2,6 +2,8 @@
 require 'ostruct'
 require 'singleton'
 require 'fileutils'
+require 'socket'
+require 'json'
 
 # Gems
 require 'rexec'

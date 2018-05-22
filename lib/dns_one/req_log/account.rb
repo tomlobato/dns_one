@@ -1,4 +1,4 @@
-module DnsOne; module Backend; class Account
+module DnsOne; module ReqLog; class Account
 
     def initialize
         @conf = Global.conf       
@@ -85,4 +85,5 @@ module DnsOne; module Backend; class Account
         end
     end
 
-end
+end; end; end
+
