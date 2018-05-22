@@ -32,12 +32,14 @@ module DnsOne; module ReqLog; class Account
     end
 
     def reap
+        last_stat = @last_stat
+        stat = @stat
         Thread.new do
             loop do
                 sleep (300 - Time.now.to_f % 300)
                 @mutex.synchronize {
-                    @last_stat = @stat.deep_dup
-                    reset @stat
+                    last_stat = stat.deep_dup
+                    reset stat
                 }
             end
         end
