@@ -27,6 +27,8 @@ module DnsOne; module Backend; class Account
             @stat[:req_resource][req_resource] ||= 0
             @stat[:req_resource][req_resource] += 1        
         }
+    rescue => e
+        Global.logger.error e.desc
     end
 
     def reap
@@ -45,6 +47,7 @@ module DnsOne; module Backend; class Account
         conf = @conf
         mutex = @mutex
         stat = @stat
+        last_stat = @last_stat
         sock = Thread.new do
             sleep 1
             begin
