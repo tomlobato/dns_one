@@ -2,15 +2,19 @@ module DnsOne; module ReqLog; class Account
 
     def initialize
         @conf = Global.conf       
+
         @stat = {}
+        @stat_mutex = Mutex.new
+        
         @last_stat = nil
-        @mutex = Mutex.new
-        open_socket
-        reap
+        @last_stat_mutex = Mutex.new
+
+        Thread.new { open_socket }
+        Thread.new { reap }
     end
 
     def on_response ip_address, domain_name, res_class, rcode, resp_log, from_cache
-        @mutex.synchronize {
+        @stat_mutex.synchronize {
             @stat[:requests] ||= 0
             @stat[:requests] += 1
             
@@ -31,50 +35,47 @@ module DnsOne; module ReqLog; class Account
         Global.logger.error e.desc
     end
 
+    def update_last_stat stat
+        if !@allow_update_last_stat
+            @allow_update_last_stat = true
+            return
+        end
+        @last_stat_mutex.synchronize {
+            @last_stat = stat
+        }
+    end
+
     def reap
-        last_stat = @last_stat
-        stat = @stat
-        Thread.new do
-            loop do
-                sleep (300 - Time.now.to_f % 300)
-                @mutex.synchronize {
-                    last_stat = stat.deep_dup
-                    reset stat
-                }
-            end
+        loop do
+            sleep (300 - Time.now.to_f % 300)
+            stat = nil
+            @stat_mutex.synchronize { 
+                stat = @stat.deep_dup 
+                reset @stat
+            }
+            update_last_stat stat
+        rescue => e
+            Global.logger.error e.desc
+            sleep 10
         end
     end
 
+    def write_socket sock
+        last_stat = @last_stat_mutex.synchronize{ @last_stat.deep_dup }
+        sock.puts last_stat.to_json
+    rescue => e
+        Global.logger.error e.desc
+    end
+
     def open_socket
-        conf = @conf
-        mutex = @mutex
-        stat = @stat
-        last_stat = @last_stat
-        sock = Thread.new do
-            sleep 1
-            begin
-                Socket.unix_server_loop(Global.conf.log_req_socket_file) do |sock, addr|
-                    Thread.new do
-                        loop do
-                            begin
-                                mutex.synchronize {
-                                    sock.write "#{ last_stat.to_json }\n"
-                                }
-                            rescue Errno::EPIPE => e
-                                break
-                            rescue => e
-                                Global.logger.error e.desc
-                                break
-                            end
-                            Thread.pass
-                            sleep 0.1
-                        end
-                    end
-                end
-            rescue => e
-                Global.logger.error e.desc
+        sleep 1 # wait for UID change before create the socket file
+        Socket.unix_server_loop(Global.conf.log_req_socket_file) do |sock, addr|
+            Thread.new do
+                write_socket sock
             end
         end
+    rescue => e
+        Global.logger.error e.desc
     end
 
     def reset hash
