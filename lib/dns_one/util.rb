@@ -58,8 +58,11 @@ module DnsOne; class Util
     def init_logger logdev, level = Logger::WARN, shift_age = 10, shift_size = 2**20
         if logdev.is_a? String
             begin
-                FileUtils.mkdir_p File.dirname(logdev)
-                File.write logdev, ''
+                if File.exists? logdev
+                    File.writable? logdev
+                else
+                    FileUtils.mkdir_p File.dirname(logdev)
+                end
             rescue => e
                 $stderr.puts "#{e.desc}\nCannot open log file #{logdev}. Will use STDOUT."
                 logdev = $stdout

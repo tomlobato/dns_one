@@ -1,3 +1,3 @@
 module DnsOne
-    VERSION = "0.5.20"
+    VERSION = "0.5.22"
 end

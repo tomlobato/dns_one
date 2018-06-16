@@ -47,7 +47,7 @@ module DnsOne; module Backend; class HTTPBell < Base
 
         url = @conf[:http_bell_url].sub '$id', last_id.to_s
 
-        recs = `curl #{url}`
+        recs = `curl #{curl_opts} '#{url}'`
             .split(/\n+/)
             .map{ |r| 
                 id, domain = r.strip.split /\s+/
@@ -60,6 +60,12 @@ module DnsOne; module Backend; class HTTPBell < Base
             }.compact
 
         recs
+    end
+
+    def curl_opts
+        if @conf[:http_bell_insecure]
+            '--insecure'
+        end
     end
 
     def log_update point, recs = nil
