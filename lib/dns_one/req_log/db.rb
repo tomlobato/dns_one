@@ -1,4 +1,4 @@
-module DnsOne; module Backend; class DB
+module DnsOne; module ReqLog; class DB
 
     DB_FNAME = "stat.db"
     META_STAT_ON = false

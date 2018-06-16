@@ -1,5 +1,5 @@
 #!/bin/bash
 
-rm dns_one-*.gem
+rm dns_one-*.gem 2> /dev/null
 gem build dns_one.gemspec 
 gem push dns_one-*.gem

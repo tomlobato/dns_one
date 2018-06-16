@@ -1,4 +1,3 @@
-
 module DnsOne; module Backend; class DB < Base
 
     def initialize conf
@@ -45,7 +44,7 @@ module DnsOne; module Backend; class DB < Base
     end
 
     def setup_db
-        #require_deps
+        require_deps
         ActiveRecord::Base.logger = Global.logger
         ActiveRecord::Base.establish_connection @conf
     end

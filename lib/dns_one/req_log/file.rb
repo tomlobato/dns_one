@@ -1,8 +1,10 @@
-module DnsOne; module Backend; class File
-    if @conf.req_log_file
-        path = @conf.req_log_file.is_a?(String) ? @conf.req_log_file : 
+module DnsOne; module ReqLog; class File
+    if  self.set_logger
+        path = @conf.req_log_file.is_a?(String) ? @conf.req_log_file : STDOUT
+
         l = Logger.new @conf.ruby_dns_logger, 10, (10 * 2**20)
         l.level = Logger::WARN
+
         Global.ruby_dns_logger = l
     end
 

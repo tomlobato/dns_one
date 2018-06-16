@@ -6,4 +6,4 @@ Description=dns_one supervisor
 User=root
 Group=root
 Restart=on-failure
-ExecStart=/bin/bash -lc '/root/.rbenv/shims/dns_one'
+ExecStart=/bin/bash -lc '/root/.rbenv/shims/dnsone'

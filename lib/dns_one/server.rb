@@ -2,6 +2,7 @@
 require "dns_one/zone_search"
 require "dns_one/req_log/req_log"
 require "dns_one/req_log/account"
+require "dns_one/req_log/db"
 
 module DnsOne; class Server
     def initialize 

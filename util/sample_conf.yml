@@ -2,7 +2,7 @@
 run_as: dnsserver                           # optional, but highly recommended! adduser --system dnsserver
 ignore_subdomains: www en it es pt ru fr at # optional, defaults to an empty list
 # cache_max: 100000                         # optional, defaults to 10000
-# log_file: /var/log/dns_one.log              # optional, defaults to /var/log/dns_one.log
+# log_file: /var/log/dnsone.log              # optional, defaults to /var/log/dnsone.log
 log_req_db: false
 log_req_file: false
 log_req_account: true
@@ -41,7 +41,7 @@ backend:
   ################
   # File backend #
 
-  # file: /etc/dns_one/domains.csv 
+  # file: /etc/dnsone.csv 
 
   # domains.csv example (set is optional, if missing the first record_set will be used)):
   # mydomain.com set1

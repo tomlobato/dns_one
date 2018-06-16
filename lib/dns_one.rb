@@ -9,9 +9,6 @@ require 'json'
 require 'rexec'
 require 'rubydns'
 require 'yaml'
-require 'pg'
-require 'active_record'
-require 'sqlite3'
 
 # DnsOne
 
@@ -23,22 +20,21 @@ require "dns_one/core_ext/hash"
 require "dns_one/global"
 require "dns_one/util"
 require "dns_one/server"
-require "dns_one/req_log/db"
 
 module DnsOne; class DnsOne
 
     DEFAULTS = {
-        conf_file:          "/etc/dns_one.yml",
-        work_dir:           "/var/local/dns_one",
-        log_file:           "/var/log/dns_one/dns_one.log",
-        rubydns_log_file:   "/var/log/dns_one/dns_one_rubydns.log",
+        conf_file:          "/etc/dnsone.yml",
+        work_dir:           "/var/local/dnsone",
+        log_file:           "/var/log/dnsone/dnsone.log",
+        rubydns_log_file:   "/var/log/dnsone/dnsone_rubydns.log",
         run_as:             "dnsone",
         interfaces:         [ [:udp, "0.0.0.0", 53],
                               [:tcp, "0.0.0.0", 53],
                               [:udp, "::", 5300],
                               [:tcp, "::", 5300] 
                             ],
-        log_req_socket_file: '/tmp/dns_one_log_result.sock'
+        log_req_socket_file: '/tmp/dnsone_log_result.sock'
     }
 
     def initialize conf_file: nil
@@ -55,7 +51,9 @@ module DnsOne; class DnsOne
 
     def load_conf conf_file
         conf = DEFAULTS.clone
-        conf.merge! YAML.load_file(conf_file).symbolize_keys
+        if File.exists? conf_file
+            conf.merge! YAML.load_file(conf_file).symbolize_keys
+        end
         Util.hash_to_ostruct_deep conf
 
     rescue => e
