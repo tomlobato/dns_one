@@ -18,17 +18,19 @@ Configure your record sets in YML files and fetch your domains from a database o
 
 ## Usage
 
-    # dns_one install
+    # dnsone setup
 
-Configure ```/etc/dns_one/conf.yml```. Then:
+Configure ```/etc/dnsone.yml```. Then:
 
-    # dns_one start
+    # systemctl enable dnsone
+    # systemctl start dnsone
 
 Also:
 
-    # dns_one status
-    # dns_one stop
-    # dns_one uninstall
+    # systemctl status dnsone
+    # systemctl stop dnsone
+
+    # dnsone remove
 
 ## Development
 
