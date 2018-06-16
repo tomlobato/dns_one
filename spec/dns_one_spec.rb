@@ -2,7 +2,7 @@ require "spec_helper"
 require 'resolv'
 
 # Run this before 'rake spec':
-# ruby -Ilib/ exe/dns_one run --conf spec/test_conf.yml
+# ruby -Ilib/ exe/dnsone run --conf spec/test_conf.yml
 
 IN = Resolv::DNS::Resource::IN
 
